@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MappyBuddy</string>
+    <string name="tap_instructions">Tap the screen for current GPS coordinates!</string>
+    <string name="gps_disabled">GPS is disabled.</string>
+    <string name="gps_waiting">Waiting for GPS.</string>
+    <string name="gps_available">GPS available</string>
+    <string name="gps_no_service">GPS unavailable</string>
+    <string name="gps_temp_unavailable">GPS temporarily unavailable.</string>
+
+</resources>
