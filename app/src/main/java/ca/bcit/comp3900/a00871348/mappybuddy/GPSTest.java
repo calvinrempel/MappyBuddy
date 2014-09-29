@@ -28,6 +28,9 @@ public class GPSTest extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gpstest);
 
+        Intent intent = new Intent( this, MapViewActivity.class );
+        startActivity( intent );
+
         // Initialize everything if they haven't already been initialized.
         if (locManager == null) {
             locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
