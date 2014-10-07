@@ -4,10 +4,12 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,12 +18,22 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 
 public class MapViewActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    private final int GPS_INTERVAL_TIME_MS = 5000;
+    private final int GPS_DISTANCE_DELTA_M = 10;
+
     private GoogleMap map;
+    private LocationListener locListener;
+    private LocationManager locManager;
+    private Marker me;
+    private boolean firstTimeFound;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -49,14 +61,22 @@ public class MapViewActivity extends Activity
         {
             try
             {
-                map = ((MapFragment) getFragmentManager().findFragmentById(R.id.mapContainer)).getMap();
+                map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+                me = null;
+                firstTimeFound = false;
             }
             catch ( NullPointerException e )
             {
-                Log.d("AFASF", "FRACK");
             }
 
 
+        }
+
+        // Initialize everything if they haven't already been initialized.
+        if (locManager == null) {
+            locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locListener = new GPSListener();
+            updateLocation();
         }
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -125,8 +145,31 @@ public class MapViewActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    private void InitMap()
+    protected void UpdateCurrentLocation( double lat, double lon )
     {
+        if ( me != null )
+        {
+            me.remove();
+            me = null;
+        }
+        else
+        {
+            findViewById(R.id.getLocationSpinner).setVisibility(View.INVISIBLE);
+        }
+
+        me = map.addMarker( ( new MarkerOptions() )
+                            .position( new LatLng( lat, lon ) )
+                            .title( "You Are Here!" ) );
+    }
+
+    /**
+     * Request new Location data from the GPS service.
+     */
+    private void updateLocation() {
+        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                GPS_INTERVAL_TIME_MS,
+                GPS_DISTANCE_DELTA_M,
+                locListener);
     }
 
     /**
@@ -167,6 +210,26 @@ public class MapViewActivity extends Activity
             ((MapViewActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
+    }
+
+
+    /**
+     * A LocationListener responds to actions fired by the GPS service.
+     */
+    private class GPSListener implements LocationListener {
+        /**
+         * When a new location is requested, update update the onscreen textview.
+         *
+         * @param l
+         */
+        public void onLocationChanged(Location l)
+        {
+            UpdateCurrentLocation( l.getLatitude(), l.getLongitude() );
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+        public void onProviderEnabled(String s) {}
+        public void onProviderDisabled(String s) {}
     }
 
 }
