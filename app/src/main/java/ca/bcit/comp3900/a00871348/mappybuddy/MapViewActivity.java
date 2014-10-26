@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -39,6 +41,7 @@ public class MapViewActivity extends Activity
     private final int GPS_INTERVAL_TIME_MS = 5000;
     private final int GPS_DISTANCE_DELTA_M = 10;
     private final float CHECK_IN_RADIUS = 500;
+    private final int ZOOM_FACTOR = 15;
 
     private GoogleMap map;
     private NavigationDrawerFragment drawer;
@@ -185,16 +188,9 @@ public class MapViewActivity extends Activity
     }
 
     public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
+        if ( number == 2 )
+        {
+            mTitle = getString(R.string.title_section2);
         }
     }
 
@@ -254,6 +250,8 @@ public class MapViewActivity extends Activity
 
     protected void UpdateCurrentLocation( double lat, double lon )
     {
+        boolean zoomToPosition = false;
+
         if ( me != null )
         {
             me.remove();
@@ -262,11 +260,18 @@ public class MapViewActivity extends Activity
         else
         {
             findViewById(R.id.getLocationSpinner).setVisibility(View.INVISIBLE);
+            zoomToPosition = true;
         }
 
         me = map.addMarker( ( new MarkerOptions() )
                             .position( new LatLng( lat, lon ) )
                             .title( "You Are Here!" ) );
+
+        if ( zoomToPosition )
+        {
+            CameraUpdate camUpdate = CameraUpdateFactory.newLatLngZoom(me.getPosition(), ZOOM_FACTOR);
+            map.animateCamera( camUpdate );
+        }
     }
 
     /**
@@ -322,9 +327,22 @@ public class MapViewActivity extends Activity
 
     public void gotoPackDetails( LocationPack pack )
     {
-        Intent intent = new Intent( this.getBaseContext(), PackDetailsActivity.class );
+        Intent intent = new Intent( this, PackDetailsActivity.class );
         intent.putExtra( PackDetailsActivity.BUNDLE_KEY_PACK, pack );
-        startActivity(intent);
+        startActivityForResult(intent, PackDetailsActivity.SELECT_LOCATION_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        if ( requestCode == PackDetailsActivity.SELECT_LOCATION_REQUEST && resultCode == RESULT_OK && data != null )
+        {
+            Bundle bundle = data.getExtras();
+            locations.Location loc = (locations.Location) bundle.getSerializable( PackDetailsActivity.BUNDLE_KEY_LOCATION );
+            LatLng pos = new LatLng( loc.getLatitude(), loc.getLongitude() );
+            CameraUpdate camUpdate = CameraUpdateFactory.newLatLngZoom( pos, ZOOM_FACTOR);
+            map.animateCamera( camUpdate );
+        }
     }
 
     /**

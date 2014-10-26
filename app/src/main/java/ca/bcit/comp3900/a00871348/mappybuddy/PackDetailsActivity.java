@@ -1,12 +1,17 @@
 package ca.bcit.comp3900.a00871348.mappybuddy;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.io.Serializable;
 
 import locations.LocationPack;
 
@@ -14,6 +19,8 @@ import locations.LocationPack;
 public class PackDetailsActivity extends Activity {
 
     public static final String BUNDLE_KEY_PACK = "LocationPack";
+    public static final String BUNDLE_KEY_LOCATION = "Location";
+    public static final int SELECT_LOCATION_REQUEST = 0;
 
     private LocationPack pack;
 
@@ -57,5 +64,20 @@ public class PackDetailsActivity extends Activity {
                         android.R.id.text1,
                         pack.getLocations() )
         );
+
+        list.setOnItemClickListener( new ListListener() );
+    }
+
+    private class ListListener implements AdapterView.OnItemClickListener
+    {
+        @Override
+        public void onItemClick( AdapterView<?> adapterView, View view, int num, long id )
+        {
+            Intent intent = new Intent();
+            locations.Location loc = pack.getLocations().get(num);
+            intent.putExtra( BUNDLE_KEY_LOCATION, (Serializable) loc );
+            setResult(RESULT_OK, intent);
+            finish();
+        }
     }
 }

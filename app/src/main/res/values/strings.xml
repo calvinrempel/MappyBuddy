@@ -8,7 +8,7 @@
     <string name="gps_available">GPS available</string>
     <string name="gps_no_service">GPS unavailable</string>
     <string name="gps_temp_unavailable">GPS temporarily unavailable.</string>
-    <string name="title_activity_map_view">MapViewActivity</string>
+    <string name="title_activity_map_view">MappyBuddy</string>
     <string name="title_section2">Packs</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -16,7 +16,7 @@
     <string name="action_settings">Settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="checkin">Check In!</string>
-    <string name="title_activity_pack_details">PackDetailsActivity</string>
+    <string name="title_activity_pack_details">Location Pack Details</string>
     <string name="hello_world">Hello world!</string>
 
 </resources>

@@ -44,4 +44,21 @@ public class Location implements Serializable
     {
         isDiscovered = true;
     }
+
+
+    /**
+     * Shhhhh... don't tell D'Arcy
+     * @return the Name of the LocationPack
+     */
+    public String toString()
+    {
+        String state = "\u2714";
+
+        if ( !isLocationDiscovered() )
+        {
+            state = "\u2718";
+        }
+
+        return state + " " + title;
+    }
 }

@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.bcit.comp3900.a00871348.mappybuddy.MapViewActivity" >
     <item android:id="@+id/action_example"
-        android:title="@string/action_example"
+        android:title="@string/action_menu"
         android:showAsAction="withText|ifRoom" />
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"

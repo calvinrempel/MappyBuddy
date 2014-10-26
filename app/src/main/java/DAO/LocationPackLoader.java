@@ -16,18 +16,27 @@ public class LocationPackLoader
 
         List<locations.LocationPack> list = new LinkedList<locations.LocationPack>();
 
-        locations.LocationPack pack = new locations.LocationPack( "Random Places" );
-        pack.addLocation( new Location( 128, 32, "My House", true ) );
-        pack.addLocation( new Location( 18, 32, "Your House", false ) );
-        pack.addLocation( new Location( 28, 32, "Their House", true ) );
-        pack.addLocation( new Location( 18, 32, "Our House", false ) );
+        locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings" );
+        pack.addLocation( new Location( 48.419f, -123.37f, "British Columbia", false ) );
+        pack.addLocation( new Location( 53.533f, -113.506f, "Alberta", false ) );
+        pack.addLocation( new Location( 50.433f, -104.615f, "Saskatchewan", false ) );
+        pack.addLocation( new Location( 49.886f, -97.146f, "Manitoba", false ) );
+        pack.addLocation( new Location( 43.662f, -79.391f, "Ontario", false ) );
+        pack.addLocation( new Location( 46.808f, -71.214f, "Quebec", false ) );
+        pack.addLocation( new Location( 47.583f, -52.724f, "Newfoundland", false ) );
+        pack.addLocation( new Location( 45.959f, -66.636f, "New Brunswick", false ) );
+        pack.addLocation( new Location( 44.648f, -63.574f, "Nova Scotia", false ) );
+        pack.addLocation( new Location( 46.235f, -63.125f, "Prince Edward Island", false ) );
+        pack.addLocation( new Location( 62.459f, -114.382f, "Northwest Territories", false ) );
+        pack.addLocation( new Location( 60.717f, -135.049f, "Yukon", false ) );
+        pack.addLocation( new Location( 63.750f, -68.523f, "Nunavut", false ) );
         list.add( pack );
 
-        pack = new locations.LocationPack( "Less Random Places" );
+        pack = new locations.LocationPack( "Burnaby Things" );
         pack.addLocation( new Location( 49.249f, -123.001f, "BCIT SE12", false ) );
-        pack.addLocation( new Location( 32, 20, "Your Place", false ) );
-        pack.addLocation( new Location( 32, 30, "Their Place", true ) );
-        pack.addLocation( new Location( 32, 40, "Our Place", false ) );
+        pack.addLocation( new Location( 49.239f, -122.966f, "Burnaby Village Museum", false ) );
+        pack.addLocation( new Location( 49.278f, -122.918f, "SFU", false ) );
+        pack.addLocation( new Location( 49.227f, -122.999f, "Metrotown", false ) );
         list.add( pack );
 
         return list;
