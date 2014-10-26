@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -212,7 +213,11 @@ public class MapViewActivity extends Activity
         }
     }
 
-
+    public void gotoPackDetails( View view )
+    {
+        Intent intent = new Intent( this.getBaseContext(), PackDetailsActivity.class );
+        startActivity( intent );
+    }
     /**
      * A LocationListener responds to actions fired by the GPS service.
      */
