@@ -4,14 +4,26 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import locations.LocationPack;
 
 
 public class PackDetailsActivity extends Activity {
+
+    public static final String BUNDLE_KEY_PACK = "LocationPack";
+
+    private LocationPack pack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pack_details);
+
+        pack = (LocationPack) getIntent().getSerializableExtra( BUNDLE_KEY_PACK );
+        initUI();
     }
 
 
@@ -32,5 +44,18 @@ public class PackDetailsActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void initUI()
+    {
+        ( (TextView) findViewById( R.id.pack_name ) ).setText( pack.toString() );
+        ListView list = (ListView) findViewById( R.id.location_list );
+
+        list.setAdapter(new ArrayAdapter<locations.Location>(
+                        this,
+                        android.R.layout.simple_list_item_activated_1,
+                        android.R.id.text1,
+                        pack.getLocations() )
+        );
     }
 }

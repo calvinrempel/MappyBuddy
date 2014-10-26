@@ -45,7 +45,8 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:textColor="#ffffff"
-                android:background="@drawable/roundrectangle" />
+                android:background="@drawable/roundrectangle"
+                android:onClick="checkIn" />
         </RelativeLayout>
     </FrameLayout>
 

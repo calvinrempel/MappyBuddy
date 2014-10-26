@@ -4,7 +4,6 @@ package ca.bcit.comp3900.a00871348.mappybuddy;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -18,8 +17,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import locations.LocationPack;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -52,6 +58,7 @@ public class NavigationDrawerFragment extends Fragment {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerListView;
     private View mFragmentContainerView;
+    private List<LocationPack> locationPacks;
 
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
@@ -88,32 +95,41 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View vw = inflater.inflate( R.layout.fragment_navigation_drawer, container, false );
-        /*
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
+
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        locationPacks = new LinkedList<locations.LocationPack>();
+        mDrawerListView.setAdapter(new ArrayAdapter<locations.LocationPack>(
                 getActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
+                locationPacks )
+        );
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
-        */
-        return vw;
+
+        return mDrawerListView;
     }
 
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
+    }
+
+    public void setContents( List<LocationPack> packs )
+    {
+        locationPacks.clear();
+        locationPacks.addAll( packs );
+    }
+
+    public LocationPack getLocationPack( int n )
+    {
+        return locationPacks.get( n );
     }
 
     /**

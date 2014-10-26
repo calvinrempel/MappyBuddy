@@ -16,12 +16,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.Iterator;
+import java.util.List;
+
+import DAO.LocationPackLoader;
+import locations.LocationPack;
 
 
 public class MapViewActivity extends Activity
@@ -29,8 +38,12 @@ public class MapViewActivity extends Activity
 
     private final int GPS_INTERVAL_TIME_MS = 5000;
     private final int GPS_DISTANCE_DELTA_M = 10;
+    private final float CHECK_IN_RADIUS = 500;
 
     private GoogleMap map;
+    private NavigationDrawerFragment drawer;
+    private LocationPack activePack;
+    private List<LocationPack> packs;
     private LocationListener locListener;
     private LocationManager locManager;
     private Marker me;
@@ -65,18 +78,29 @@ public class MapViewActivity extends Activity
                 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
                 me = null;
                 firstTimeFound = false;
+                drawer = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
+                loadLocationPackList();
             }
             catch ( NullPointerException e )
             {
+                Toast.makeText( this, "Cannot Load Google Maps.", Toast.LENGTH_LONG );
             }
-
-
         }
 
         // Initialize everything if they haven't already been initialized.
-        if (locManager == null) {
+        if (locManager == null)
+        {
             locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             locListener = new GPSListener();
+
+
+            if ( locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER ) != null)
+            {
+                Location loc = locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER );
+                UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
+            }
+
+            findViewById(R.id.getLocationSpinner).setVisibility(View.VISIBLE);
             updateLocation();
         }
 
@@ -97,6 +121,67 @@ public class MapViewActivity extends Activity
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
                 .commit();
+
+        if ( drawer != null && map != null )
+        {
+            LocationPack pack = drawer.getLocationPack( position );
+
+            if ( pack == activePack && pack != null )
+            {
+                gotoPackDetails( pack );
+            }
+            else
+            {
+                setActivePack(drawer.getLocationPack(position));
+            }
+        }
+    }
+
+    public void checkIn( View view )
+    {
+        List<locations.Location> inRange = activePack.getLocationsInRange( (float) me.getPosition().latitude,
+                                                                           (float) me.getPosition().longitude,
+                                                                           CHECK_IN_RADIUS );
+
+        Iterator<locations.Location> itr = inRange.iterator();
+
+        while ( itr.hasNext() )
+        {
+            itr.next().checkIn();
+        }
+
+        // Reload Markers
+        this.setActivePack( activePack );
+    }
+
+    public void loadLocationPackList()
+    {
+        packs = ( new LocationPackLoader() ).getLocationPacks();
+        drawer.setContents( packs );
+        setActivePack( packs.get( 0 ) );
+    }
+
+    public void setActivePack( LocationPack pack )
+    {
+        map.clear();
+
+        if ( me != null )
+        {
+            if ( locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER ) != null)
+            {
+                Location loc = locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER );
+                UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
+            }
+        }
+
+        activePack = pack;
+
+        Iterator<locations.Location> itr = pack.getLocations().iterator();
+
+        while ( itr.hasNext() )
+        {
+            addLocation( itr.next() );
+        }
     }
 
     public void onSectionAttached(int number) {
@@ -116,7 +201,7 @@ public class MapViewActivity extends Activity
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
+        //actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
 
@@ -146,6 +231,27 @@ public class MapViewActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
+    protected void addLocation( locations.Location location )
+    {
+        MarkerOptions marker = new MarkerOptions();
+        marker.position( new LatLng( location.getLatitude(), location.getLongitude() ) );
+        marker.title( location.getTitle() );
+
+        BitmapDescriptor bitmap;
+        if ( location.isLocationDiscovered() )
+        {
+            bitmap = BitmapDescriptorFactory.fromResource( R.drawable.discovered );
+        }
+        else
+        {
+            bitmap = BitmapDescriptorFactory.fromResource( R.drawable.undiscovered );
+        }
+
+        marker.icon( bitmap );
+
+        map.addMarker( marker );
+    }
+
     protected void UpdateCurrentLocation( double lat, double lon )
     {
         if ( me != null )
@@ -166,7 +272,8 @@ public class MapViewActivity extends Activity
     /**
      * Request new Location data from the GPS service.
      */
-    private void updateLocation() {
+    private void updateLocation()
+    {
         locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 GPS_INTERVAL_TIME_MS,
                 GPS_DISTANCE_DELTA_M,
@@ -213,11 +320,13 @@ public class MapViewActivity extends Activity
         }
     }
 
-    public void gotoPackDetails( View view )
+    public void gotoPackDetails( LocationPack pack )
     {
         Intent intent = new Intent( this.getBaseContext(), PackDetailsActivity.class );
-        startActivity( intent );
+        intent.putExtra( PackDetailsActivity.BUNDLE_KEY_PACK, pack );
+        startActivity(intent);
     }
+
     /**
      * A LocationListener responds to actions fired by the GPS service.
      */
