@@ -1,11 +1,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.bcit.comp3900.a00871348.mappybuddy.MapViewActivity" >
+
     <item android:id="@+id/action_example"
         android:title="@string/action_menu"
-        android:showAsAction="withText|ifRoom" />
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never" />
+        android:showAsAction="withText|ifRoom" >
+        <menu>
+            <item android:id="@+id/action_create"
+                android:title="@string/action_create"
+                android:orderInCategory="100"
+                android:showAsAction="never" />
+
+            <item android:id="@+id/action_edit"
+                android:title="@string/action_edit"
+                android:orderInCategory="100"
+                android:showAsAction="never" />
+
+            <item android:id="@+id/action_discover"
+                android:title="@string/action_discover"
+                android:orderInCategory="100"
+                android:showAsAction="never" />
+        </menu>
+    </item>
 </menu>

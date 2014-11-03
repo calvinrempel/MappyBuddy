@@ -16,7 +16,7 @@ public class LocationPackLoader
 
         List<locations.LocationPack> list = new LinkedList<locations.LocationPack>();
 
-        locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings" );
+        locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings", false );
         pack.addLocation( new Location( 48.419f, -123.37f, "British Columbia", false ) );
         pack.addLocation( new Location( 53.533f, -113.506f, "Alberta", false ) );
         pack.addLocation( new Location( 50.433f, -104.615f, "Saskatchewan", false ) );
@@ -32,7 +32,7 @@ public class LocationPackLoader
         pack.addLocation( new Location( 63.750f, -68.523f, "Nunavut", false ) );
         list.add( pack );
 
-        pack = new locations.LocationPack( "Burnaby Things" );
+        pack = new locations.LocationPack( "Burnaby Things", false );
         pack.addLocation( new Location( 49.249f, -123.001f, "BCIT SE12", false ) );
         pack.addLocation( new Location( 49.239f, -122.966f, "Burnaby Village Museum", false ) );
         pack.addLocation( new Location( 49.278f, -122.918f, "SFU", false ) );

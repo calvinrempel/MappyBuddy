@@ -20,8 +20,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,6 +63,7 @@ public class NavigationDrawerFragment extends Fragment {
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+    private Menu menu;
 
     public NavigationDrawerFragment() {
     }
@@ -119,6 +120,26 @@ public class NavigationDrawerFragment extends Fragment {
 
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
+    }
+
+    public void select( LocationPack pack )
+    {
+        int i = 0;
+        Iterator<LocationPack> itr = locationPacks.iterator();
+        LocationPack other;
+
+        while ( itr.hasNext() )
+        {
+            other = itr.next();
+
+            if ( other == pack )
+            {
+                mDrawerListView.setSelection( i );
+                mDrawerListView.setItemChecked( i, true );
+            }
+
+            i++;
+        }
     }
 
     public void setContents( List<LocationPack> packs )
@@ -256,7 +277,14 @@ public class NavigationDrawerFragment extends Fragment {
             inflater.inflate(R.menu.global, menu);
             showGlobalContextActionBar();
         }
+
+        this.menu = menu;
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    public Menu getMenu()
+    {
+        return menu;
     }
 
     @Override
@@ -265,9 +293,19 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-            return true;
+        switch ( item.getItemId() )
+        {
+            case R.id.action_create:
+                mCallbacks.createLocationPack();
+                return true;
+
+            case R.id.action_discover:
+                mCallbacks.discoverLocationPack();
+                return true;
+
+            case R.id.action_edit:
+                mCallbacks.editLocationPack();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -296,5 +334,8 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+        void createLocationPack();
+        void editLocationPack();
+        void discoverLocationPack();
     }
 }

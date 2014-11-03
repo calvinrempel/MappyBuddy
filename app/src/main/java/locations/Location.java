@@ -48,7 +48,7 @@ public class Location implements Serializable
 
     /**
      * Shhhhh... don't tell D'Arcy
-     * @return the Name of the LocationPack
+     * @return the Name of the Location
      */
     public String toString()
     {

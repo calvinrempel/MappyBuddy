@@ -14,12 +14,14 @@ import java.util.List;
  */
 public class LocationPack implements Serializable
 {
+    private boolean isEditable;
     private List<Location> locations;
     private String name;
 
-    public LocationPack( String name )
+    public LocationPack( String name, boolean isEditable )
     {
         this.name = name;
+        this.isEditable = isEditable;
         locations = new LinkedList<Location>();
     }
 
@@ -31,6 +33,11 @@ public class LocationPack implements Serializable
     public void addLocation( Location location )
     {
         locations.add( location );
+    }
+
+    public boolean isEditable()
+    {
+        return isEditable;
     }
 
     public List<Location> getLocationsInRange( float lat, float lon, float radius )

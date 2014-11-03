@@ -2,9 +2,11 @@ package ca.bcit.comp3900.a00871348.mappybuddy;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
@@ -13,9 +15,10 @@ import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -38,6 +41,12 @@ import locations.LocationPack;
 public class MapViewActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    private enum MODE
+    {
+        DISCOVER,
+        CREATE
+    };
+
     private final int GPS_INTERVAL_TIME_MS = 5000;
     private final int GPS_DISTANCE_DELTA_M = 10;
     private final float CHECK_IN_RADIUS = 500;
@@ -51,6 +60,8 @@ public class MapViewActivity extends Activity
     private LocationManager locManager;
     private Marker me;
     private boolean firstTimeFound;
+    private MODE mode;
+    private Menu optionsMenu;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -96,20 +107,21 @@ public class MapViewActivity extends Activity
             locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             locListener = new GPSListener();
 
+            findViewById(R.id.getLocationSpinner).setVisibility(View.VISIBLE);
 
-            if ( locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER ) != null)
+            if ( locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER) != null)
             {
-                Location loc = locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER );
+                Location loc = locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
                 UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
             }
 
-            findViewById(R.id.getLocationSpinner).setVisibility(View.VISIBLE);
             updateLocation();
         }
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+        setMode( MODE.DISCOVER );
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -135,6 +147,7 @@ public class MapViewActivity extends Activity
             }
             else
             {
+                setMode( MODE.DISCOVER );
                 setActivePack(drawer.getLocationPack(position));
             }
         }
@@ -142,19 +155,35 @@ public class MapViewActivity extends Activity
 
     public void checkIn( View view )
     {
-        List<locations.Location> inRange = activePack.getLocationsInRange( (float) me.getPosition().latitude,
-                                                                           (float) me.getPosition().longitude,
-                                                                           CHECK_IN_RADIUS );
-
-        Iterator<locations.Location> itr = inRange.iterator();
-
-        while ( itr.hasNext() )
+        if ( mode == MODE.DISCOVER )
         {
-            itr.next().checkIn();
-        }
+            Iterator<LocationPack> packItr = packs.iterator();
+            List<locations.Location> inRange;
 
-        // Reload Markers
-        this.setActivePack( activePack );
+            while ( packItr.hasNext() )
+            {
+                inRange = packItr.next().getLocationsInRange((float) me.getPosition().latitude,
+                                                             (float) me.getPosition().longitude,
+                                                             CHECK_IN_RADIUS);
+
+                Iterator<locations.Location> itr = inRange.iterator();
+
+                while (itr.hasNext())
+                {
+                    itr.next().checkIn();
+                }
+            }
+
+            // Reload Markers
+            this.setActivePack(activePack);
+        }
+        else
+        {
+            if ( activePack != null )
+            {
+                createLocation();
+            }
+        }
     }
 
     public void loadLocationPackList()
@@ -170,9 +199,9 @@ public class MapViewActivity extends Activity
 
         if ( me != null )
         {
-            if ( locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER ) != null)
+            if ( locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER ) != null)
             {
-                Location loc = locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER );
+                Location loc = locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
                 UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
             }
         }
@@ -185,6 +214,20 @@ public class MapViewActivity extends Activity
         {
             addLocation( itr.next() );
         }
+
+        // Update Menu
+        /*
+        if ( pack.isEditable() )
+        {
+            drawer.getMenu().findItem( R.id.action_edit ).setVisible( true );
+            drawer.getMenu().findItem( R.id.action_discover ).setVisible( false );
+        }
+        else
+        {
+            drawer.getMenu().findItem( R.id.action_edit ).setVisible( false );
+            drawer.getMenu().findItem( R.id.action_discover ).setVisible( true );
+        }
+        */
     }
 
     public void onSectionAttached(int number) {
@@ -204,37 +247,29 @@ public class MapViewActivity extends Activity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
+        if (!mNavigationDrawerFragment.isDrawerOpen())
+        {
             getMenuInflater().inflate(R.menu.map_view, menu);
             restoreActionBar();
             return true;
         }
-        return super.onCreateOptionsMenu(menu);
-    }
+        optionsMenu = menu;
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return super.onCreateOptionsMenu(menu);
     }
 
     protected void addLocation( locations.Location location )
     {
         MarkerOptions marker = new MarkerOptions();
-        marker.position( new LatLng( location.getLatitude(), location.getLongitude() ) );
+        marker.position(new LatLng(location.getLatitude(), location.getLongitude()));
         marker.title( location.getTitle() );
 
         BitmapDescriptor bitmap;
-        if ( location.isLocationDiscovered() )
+        if ( activePack.isEditable() && mode == MODE.CREATE )
+        {
+            bitmap = BitmapDescriptorFactory.fromResource( R.drawable.created );
+        }
+        else if ( location.isLocationDiscovered() )
         {
             bitmap = BitmapDescriptorFactory.fromResource( R.drawable.discovered );
         }
@@ -245,7 +280,7 @@ public class MapViewActivity extends Activity
 
         marker.icon( bitmap );
 
-        map.addMarker( marker );
+        map.addMarker(marker);
     }
 
     protected void UpdateCurrentLocation( double lat, double lon )
@@ -259,10 +294,10 @@ public class MapViewActivity extends Activity
         }
         else
         {
-            findViewById(R.id.getLocationSpinner).setVisibility(View.INVISIBLE);
             zoomToPosition = true;
         }
 
+        findViewById(R.id.getLocationSpinner).setVisibility(View.INVISIBLE);
         me = map.addMarker( ( new MarkerOptions() )
                             .position( new LatLng( lat, lon ) )
                             .title( "You Are Here!" ) );
@@ -279,10 +314,90 @@ public class MapViewActivity extends Activity
      */
     private void updateLocation()
     {
-        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
                 GPS_INTERVAL_TIME_MS,
                 GPS_DISTANCE_DELTA_M,
                 locListener);
+    }
+
+    private void createLocation()
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Location Name");
+        alert.setMessage("Enter Name:");
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton( "Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+
+                locations.Location loc = new locations.Location( (float) me.getPosition().latitude,
+                                                                 (float) me.getPosition().longitude,
+                                                                 value,
+                                                                 false );
+                activePack.addLocation( loc );
+                setActivePack( activePack );
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+        alert.show();
+    }
+
+    public void createLocationPack()
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle( "Location Pack Name" );
+        alert.setMessage("Enter Name:");
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton( "Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+
+                LocationPack pack = new LocationPack( value, true );
+                packs.add( pack );
+                drawer.setContents( packs );
+                setActivePack( pack );
+                drawer.select(pack);
+
+                // Save Pack
+                setMode( MODE.CREATE );
+                Button btn = (Button) findViewById( R.id.button );
+                btn.setText( "Add Location" );
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton){
+            }
+        });
+
+        alert.show();
+    }
+
+    public void discoverLocationPack()
+    {
+        setMode( MODE.DISCOVER );
+        setActivePack( activePack );
+    }
+
+    public void editLocationPack()
+    {
+        setMode( MODE.CREATE );
+        setActivePack( activePack );
     }
 
     /**
@@ -328,7 +443,7 @@ public class MapViewActivity extends Activity
     public void gotoPackDetails( LocationPack pack )
     {
         Intent intent = new Intent( this, PackDetailsActivity.class );
-        intent.putExtra( PackDetailsActivity.BUNDLE_KEY_PACK, pack );
+        intent.putExtra(PackDetailsActivity.BUNDLE_KEY_PACK, pack);
         startActivityForResult(intent, PackDetailsActivity.SELECT_LOCATION_REQUEST);
     }
 
@@ -342,6 +457,22 @@ public class MapViewActivity extends Activity
             LatLng pos = new LatLng( loc.getLatitude(), loc.getLongitude() );
             CameraUpdate camUpdate = CameraUpdateFactory.newLatLngZoom( pos, ZOOM_FACTOR);
             map.animateCamera( camUpdate );
+        }
+    }
+
+    private void setMode( MODE mode )
+    {
+        this.mode = mode;
+
+        switch ( mode )
+        {
+            case DISCOVER:
+                ( (Button) findViewById(R.id.button)).setText( "Check In" );
+                break;
+
+            case CREATE:
+                ( (Button) findViewById(R.id.button)).setText( "Add Location" );
+                break;
         }
     }
 
