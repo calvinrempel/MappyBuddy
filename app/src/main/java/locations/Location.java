@@ -11,6 +11,7 @@ public class Location implements Serializable
     private float lon;
     private String title;
     private boolean isDiscovered;
+    private Location prereq;
 
     public Location( float _lat, float _lon, String _title, boolean discovered )
     {
@@ -18,6 +19,12 @@ public class Location implements Serializable
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
+        prereq = null;
+    }
+
+    public Location getPrereq()
+    {
+        return prereq;
     }
 
     public float getLatitude()
@@ -42,9 +49,14 @@ public class Location implements Serializable
 
     public void checkIn()
     {
-        isDiscovered = true;
+        if ( prereq == null || prereq.isLocationDiscovered() )
+            isDiscovered = true;
     }
 
+    public void setPrereq( Location location )
+    {
+        prereq = location;
+    }
 
     /**
      * Shhhhh... don't tell D'Arcy

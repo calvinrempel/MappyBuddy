@@ -8,6 +8,7 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +53,9 @@ public class MapViewActivity extends Activity
     private final int GPS_DISTANCE_DELTA_M = 10;
     private final float CHECK_IN_RADIUS = 500;
     private final int ZOOM_FACTOR = 15;
+
+    private static final int LINE_COLOR_DISCOVERED = Color.GREEN;
+    private static final int LINE_COLOR_UNDISCOVERED = Color.RED;
 
     private GoogleMap map;
     private NavigationDrawerFragment drawer;
@@ -214,21 +219,8 @@ public class MapViewActivity extends Activity
         {
             addLocation( itr.next() );
         }
-
-        // Update Menu
-        /*
-        if ( pack.isEditable() )
-        {
-            drawer.getMenu().findItem( R.id.action_edit ).setVisible( true );
-            drawer.getMenu().findItem( R.id.action_discover ).setVisible( false );
-        }
-        else
-        {
-            drawer.getMenu().findItem( R.id.action_edit ).setVisible( false );
-            drawer.getMenu().findItem( R.id.action_discover ).setVisible( true );
-        }
-        */
     }
+
 
     public void onSectionAttached(int number) {
         if ( number == 2 )
@@ -260,9 +252,48 @@ public class MapViewActivity extends Activity
 
     protected void addLocation( locations.Location location )
     {
+        String title = location.getTitle();
         MarkerOptions marker = new MarkerOptions();
         marker.position(new LatLng(location.getLatitude(), location.getLongitude()));
-        marker.title( location.getTitle() );
+
+        locations.Location prereq = location.getPrereq();
+        if ( prereq != null )
+        {
+            LatLng cur = new LatLng( location.getLatitude(), location.getLongitude() );
+            LatLng pre = new LatLng( prereq.getLatitude(), prereq.getLongitude() );
+            LatLng center;
+            double centerLat, centerLon;
+
+            centerLat = ( ( cur.latitude - pre.latitude ) / 2.0 ) + pre.latitude;
+            centerLon = ( ( cur.longitude - pre.longitude ) / 2.0 ) + pre.longitude;
+            center = new LatLng( centerLat, centerLon );
+
+            float rotation = (float) Math.atan( Math.abs( cur.longitude - pre.longitude )  / Math.abs( cur.latitude - pre.latitude ) );
+
+            PolylineOptions polyline = new PolylineOptions();
+            polyline.add( cur );
+            polyline.add( pre );
+
+            if ( prereq.isLocationDiscovered() && location.isLocationDiscovered() )
+            {
+                polyline.color( LINE_COLOR_DISCOVERED );
+            }
+            else
+            {
+                polyline.color( LINE_COLOR_UNDISCOVERED );
+            }
+
+            MarkerOptions arrowMarker = new MarkerOptions();
+            arrowMarker.position( center );
+            arrowMarker.rotation( rotation );
+            BitmapDescriptor arrow = BitmapDescriptorFactory.fromResource( R.drawable.arrow );
+            arrowMarker.icon( arrow );
+
+            map.addPolyline( polyline );
+            map.addMarker( arrowMarker );
+        }
+
+        marker.title( title );
 
         BitmapDescriptor bitmap;
         if ( activePack.isEditable() && mode == MODE.CREATE )
