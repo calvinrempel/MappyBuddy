@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 /**
  * Created by Marc on 2014-10-20.
  */
-public class Location {
+public class LocationAccess {
     private static final int DATABASE_VERSION = 1;
     private static final String TABLE_NAME        = "Location";
     private static final String DATABASE_NAME     = "locationDatabase";
