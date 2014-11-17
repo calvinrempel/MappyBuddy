@@ -17,6 +17,15 @@ public class LocationPack implements Serializable
     private boolean isEditable;
     private List<Location> locations;
     private String name;
+    private int id;
+
+    public LocationPack( String name, boolean isEditable, int id )
+    {
+        this.name = name;
+        this.isEditable = isEditable;
+        this.id = id;
+        locations = new LinkedList<Location>();
+    }
 
     public LocationPack( String name, boolean isEditable )
     {
@@ -50,7 +59,7 @@ public class LocationPack implements Serializable
             Location loc = itr.next();
 
             if ( !loc.isLocationDiscovered() ) {
-                double dist = SphericalUtil.computeDistanceBetween(new LatLng(lat, lon),
+                    double dist = SphericalUtil.computeDistanceBetween(new LatLng(lat, lon),
                         new LatLng(loc.getLatitude(), loc.getLongitude()));
 
                 if (dist < radius)
