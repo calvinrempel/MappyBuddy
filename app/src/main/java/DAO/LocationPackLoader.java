@@ -32,11 +32,20 @@ public class LocationPackLoader
         pack.addLocation( new Location( 63.750f, -68.523f, "Nunavut", false ) );
         list.add( pack );
 
+        Location loc1, loc2;
+
         pack = new locations.LocationPack( "Burnaby Things", false );
-        pack.addLocation( new Location( 49.249f, -123.001f, "BCIT SE12", false ) );
-        pack.addLocation( new Location( 49.239f, -122.966f, "Burnaby Village Museum", false ) );
+        pack.addLocation( loc1 = new Location( 49.249f, -123.001f, "BCIT SE12", false ) );
+        pack.addLocation( loc2 = new Location( 49.239f, -122.966f, "Burnaby Village Museum", true ) );
+
+        loc1.setPrereq( loc2 );
+
         pack.addLocation( new Location( 49.278f, -122.918f, "SFU", false ) );
-        pack.addLocation( new Location( 49.227f, -122.999f, "Metrotown", false ) );
+        pack.addLocation( loc2 = new Location( 49.227f, -122.999f, "Metrotown", false ) );
+
+        pack.addLocation( loc1 = new Location( 49.246f, -123.0017f, "Not My House", false ) );
+        loc1.setPrereq( loc2 );
+
         list.add( pack );
 
         return list;
