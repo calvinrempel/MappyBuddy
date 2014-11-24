@@ -12,6 +12,7 @@ public class Location implements Serializable
     private String title;
     private boolean isDiscovered;
     private Location prereq;
+    private int id;
 
     public Location( float _lat, float _lon, String _title, boolean discovered )
     {
@@ -19,7 +20,13 @@ public class Location implements Serializable
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
+
         prereq = null;
+    }
+
+    public int getId()
+    {
+        return id;
     }
 
     public Location getPrereq()

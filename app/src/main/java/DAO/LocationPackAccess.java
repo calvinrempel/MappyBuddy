@@ -28,9 +28,14 @@ public class LocationPackAccess {
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + NAME_ATTRIBUTE + " =  ?", args);
 
     return new LocationPack( c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
-            ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
-            c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
-}
+                           ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
+                             c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
+    }
+
+    public long insertLocationPack( LocationPack lp )
+    {
+
+    }
 
     private class LocationDatabase extends SQLiteOpenHelper
     {

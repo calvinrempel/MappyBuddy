@@ -34,6 +34,11 @@ public class LocationPack implements Serializable
         locations = new LinkedList<Location>();
     }
 
+    public int getId()
+    {
+        return id;
+    }
+
     public List<Location> getLocations()
     {
         return locations;
