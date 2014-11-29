@@ -1,5 +1,6 @@
 package DAO;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,27 +18,48 @@ public class LocationPackAccess {
     private static final String ID_ATTRIBUTE       = "_id";
     private static final String NAME_ATTRIBUTE     = "name";
     private static final String EDITABLE_ATTRIBUTE = "editable";
-    private final SQLiteDatabase READ_DB  = new LocationDatabase(null).getReadableDatabase();
-    private final SQLiteDatabase WRITE_DB = new LocationDatabase(null).getWritableDatabase();
+    private final SQLiteDatabase READ_DB  = new LocationPackDatabase(null).getReadableDatabase();
+    private final SQLiteDatabase WRITE_DB = new LocationPackDatabase(null).getWritableDatabase();
 
-    public LocationPack getLocationPack( String name )
+    /**
+     * This function returns a LocationPack From the Server.
+     *
+     * @param name This should be one string with the name, multiple elements will cause undefined behaviour.
+     * @return a location pack with the name of the given location pack.
+     */
+    public LocationPack getLocationPack( String... name )
     {
-        SQLiteDatabase db = new LocationDatabase(null).getReadableDatabase();
-
-        String[] args = {name};
-        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + NAME_ATTRIBUTE + " =  ?", args);
+        Cursor c = READ_DB.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + NAME_ATTRIBUTE + " =  ?", name);
 
     return new LocationPack( c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
                            ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
                              c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
     }
 
+    /**
+     * Inserts a location into the database.
+     *
+     * NOTE: This method does not add the Locations themselves, that must be done separately.
+     *
+     * @param lp A reference to the LocationPack being stored.
+     * @return The ID in the DB for the LocationPack
+     */
     public long insertLocationPack( LocationPack lp )
     {
+        LocationAccess locationAccess = new LocationAccess();
+        ContentValues values = new ContentValues();
+        long id;
 
+        values.put(NAME_ATTRIBUTE, lp.getName());
+        values.put(EDITABLE_ATTRIBUTE, lp.isEditable()? 1 : 0 );
+
+        return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
     }
 
-    private class LocationDatabase extends SQLiteOpenHelper
+    /**
+     *  This is the database to be used for managing location packs. Its super nifty.
+     */
+    private class LocationPackDatabase extends SQLiteOpenHelper
     {
         private static final String PACKAGE_DATABASE_CREATE =
                 "CREATE TABLE " + TABLE_NAME + "(" +
@@ -50,7 +72,7 @@ public class LocationPackAccess {
         private static final String PACKAGE_DATABASE_UPDATE2 =
                 "ALTER TABLE " + TABLE_NAME + " MODIFY COLUMN " + ID_ATTRIBUTE + " INTEGER auto_increment";
 
-        LocationDatabase( Context context )
+        LocationPackDatabase( Context context )
         {
             super(context, DATABASE_NAME, null, DATABASE_VERSION );
         }

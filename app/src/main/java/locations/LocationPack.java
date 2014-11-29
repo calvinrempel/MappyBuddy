@@ -79,9 +79,21 @@ public class LocationPack implements Serializable
 
     /**
      * Shhhhh... don't tell D'Arcy
+     * @deprecated use getName instead.
      * @return the Name of the LocationPack
      */
+    @Deprecated
     public String toString()
+    {
+        return name;
+    }
+
+    /**
+     * Gets the name of the Location Pack
+     *
+     * @return name of the location pack
+     */
+    public String getName()
     {
         return name;
     }
