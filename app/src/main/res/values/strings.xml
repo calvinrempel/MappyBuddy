@@ -21,5 +21,6 @@
     <string name="checkin">Check In!</string>
     <string name="title_activity_pack_details">Location Pack Details</string>
     <string name="hello_world">Hello world!</string>
+    <string name="noLocationFound">Location Not Found</string>
 
 </resources>

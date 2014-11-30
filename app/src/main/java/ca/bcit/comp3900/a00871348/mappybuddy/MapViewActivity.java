@@ -32,7 +32,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.MarkerManager;
 
 import java.util.Iterator;
 import java.util.List;
@@ -83,14 +82,6 @@ public class MapViewActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_view);
-
-        /*
-        MapFragment mapFrag = new MapFragment();
-        FragmentTransaction fragTransaction = getFragmentManager().beginTransaction();
-        fragTransaction.add(  R.id.mapContainer, mapFrag );
-        fragTransaction.commit();
-        */
-
         if ( map == null )
         {
             try
@@ -103,7 +94,7 @@ public class MapViewActivity extends Activity
             }
             catch ( NullPointerException e )
             {
-                Toast.makeText( this, "Cannot Load Google Maps.", Toast.LENGTH_LONG );
+                Toast.makeText( this, "Cannot Load Google Maps.", Toast.LENGTH_LONG ).show();
             }
         }
 
@@ -115,9 +106,11 @@ public class MapViewActivity extends Activity
 
             findViewById(R.id.getLocationSpinner).setVisibility(View.VISIBLE);
 
-            if ( locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER) != null)
+
+            Location loc = getLastKnownLocationAll();
+
+            if( loc != null )
             {
-                Location loc = locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
                 UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
             }
 
@@ -133,6 +126,27 @@ public class MapViewActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+    }
+
+    public Location getLastKnownLocationAll()
+    {
+        Location loc = null;
+
+        if ( locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER) != null)
+        {
+            loc = locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
+            UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
+        }
+        else if( locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER ) != null)
+        {
+            loc = locManager.getLastKnownLocation( LocationManager.GPS_PROVIDER);
+        }
+        else if( locManager.getLastKnownLocation( LocationManager.PASSIVE_PROVIDER ) != null)
+        {
+            loc = locManager.getLastKnownLocation( LocationManager.PASSIVE_PROVIDER );
+        }
+
+        return loc;
     }
 
     @Override
@@ -161,34 +175,40 @@ public class MapViewActivity extends Activity
 
     public void checkIn( View view )
     {
-        if ( mode == MODE.DISCOVER )
+        if (me != null)
         {
-            Iterator<LocationPack> packItr = packs.iterator();
-            List<locations.Location> inRange;
-
-            while ( packItr.hasNext() )
+            if (mode == MODE.DISCOVER)
             {
-                inRange = packItr.next().getLocationsInRange((float) me.getPosition().latitude,
-                                                             (float) me.getPosition().longitude,
-                                                             CHECK_IN_RADIUS);
+                Iterator<LocationPack> packItr = packs.iterator();
+                List<locations.Location> inRange;
 
-                Iterator<locations.Location> itr = inRange.iterator();
 
-                while (itr.hasNext())
+                while (packItr.hasNext())
                 {
-                    itr.next().checkIn();
+                    inRange = packItr.next().getLocationsInRange((float) me.getPosition().latitude,
+                            (float) me.getPosition().longitude,
+                            CHECK_IN_RADIUS);
+
+                    for (locations.Location anInRange : inRange)
+                    {
+                        anInRange.checkIn();
+                    }
+                }
+
+                // Reload Markers
+                this.setActivePack(activePack);
+            }
+            else
+            {
+                if (activePack != null)
+                {
+                    createLocation();
                 }
             }
-
-            // Reload Markers
-            this.setActivePack(activePack);
         }
         else
         {
-            if ( activePack != null )
-            {
-                createLocation();
-            }
+            Toast.makeText(this, getString(R.string.noLocationFound), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -205,9 +225,9 @@ public class MapViewActivity extends Activity
 
         if ( me != null )
         {
-            if ( locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER ) != null)
+            Location loc = getLastKnownLocationAll();
+            if ( loc != null )
             {
-                Location loc = locManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
                 UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
             }
         }
@@ -400,7 +420,7 @@ public class MapViewActivity extends Activity
                 String value = input.getText().toString();
 
                 LocationPack pack = new LocationPack( value, true );
-                packs.add( pack );
+                packs.add(pack);
                 drawer.setContents( packs );
                 setActivePack( pack );
                 drawer.select(pack);
@@ -408,7 +428,7 @@ public class MapViewActivity extends Activity
                 // Save Pack
                 setMode( MODE.CREATE );
                 Button btn = (Button) findViewById( R.id.button );
-                btn.setText( "Add Location" );
+                btn.setText("Add Location");
             }
         });
 
@@ -423,7 +443,7 @@ public class MapViewActivity extends Activity
     public void discoverLocationPack()
     {
         setMode( MODE.DISCOVER );
-        setActivePack( activePack );
+        setActivePack(activePack);
     }
 
     public void editLocationPack()
