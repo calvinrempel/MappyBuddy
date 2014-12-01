@@ -2,10 +2,10 @@ package DAO;
 
 import android.content.Context;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import locations.Location;
+import locations.LocationPack;
 
 /**
  * Created by Calvin_2 on 26/10/2014.
@@ -14,9 +14,18 @@ public class LocationPackLoader
 {
     public List<locations.LocationPack> getLocationPacks( Context context )
     {
+        List<LocationPack> list;
+        LocationPackAccess packAccess = new LocationPackAccess( context );
+        list = packAccess.getAllLocationPacks( context );
+
+        if ( list.size() == 0 )
+        {
+            createDefault( context, packAccess, new LocationAccess( context ) );
+        }
+
         // TEST STUFF ONLY AT THE MINUTE!
 
-
+/*
         List<locations.LocationPack> list = new LinkedList<locations.LocationPack>();
 
         locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings", false );
@@ -50,7 +59,7 @@ public class LocationPackLoader
         loc1.setPrereq( loc2 );
 
         list.add( pack );
-
+    */
         return list;
     }
 

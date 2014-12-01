@@ -6,13 +6,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import locations.LocationPack;
 
 /**
  * Created by Marc on 2014-10-20.
  */
 public class LocationPackAccess {
-    private static final int DATABASE_VERSION      = 11;
+    private static final int DATABASE_VERSION      = 16;
     private static final String TABLE_NAME         = "LocationPack";
     private static final String DATABASE_NAME      = "locationDatabase";
     private static final String ID_ATTRIBUTE       = "_id";
@@ -44,6 +47,28 @@ public class LocationPackAccess {
                              c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
     }
 
+    public List<LocationPack> getAllLocationPacks( Context context )
+    {
+        Cursor c = READ_DB.rawQuery("SELECT * FROM " + TABLE_NAME, new String[0]);
+        List<LocationPack> packs = new LinkedList<LocationPack>();
+
+        if ( c.getCount() < 1 )
+        {
+            return packs;
+        }
+
+        c.moveToFirst();
+        while ( c.moveToNext() )
+        {
+            packs.add( new LocationPack( context,
+                    c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
+                    ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
+                    c.getInt( c.getColumnIndex(ID_ATTRIBUTE))) );
+        }
+
+        return packs;
+    }
+
     /**
      * Inserts a location into the database.
      *
@@ -59,8 +84,7 @@ public class LocationPackAccess {
         values.put(NAME_ATTRIBUTE, name);
         values.put(EDITABLE_ATTRIBUTE, isEditable? 1 : 0  );
 
-        return 0L;
-        //return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
+        return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
     }
 
     /**

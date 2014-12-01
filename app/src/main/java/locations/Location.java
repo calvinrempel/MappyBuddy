@@ -9,7 +9,7 @@ import DAO.LocationAccess;
 /**
  * Created by Calvin_2 on 26/10/2014.
  */
-public class Location implements Serializable
+public class Location implements Serializable, Comparable<Location>
 {
     private float lat;
     private float lon;
@@ -17,6 +17,25 @@ public class Location implements Serializable
     private boolean isDiscovered;
     private Location prereq;
     private int id;
+
+    public int compareTo( Location other )
+    {
+        if ( other == null )
+        {
+            return 1;
+        }
+
+        if ( other.getId() > getId() )
+        {
+            return -1;
+        }
+        if ( other.getId() == getId() )
+        {
+            return 0;
+        }
+
+        return 1;
+    }
 
     public Location( float _lat, float _lon, String _title, boolean discovered )
     {

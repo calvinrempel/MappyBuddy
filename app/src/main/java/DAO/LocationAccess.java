@@ -17,7 +17,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationAccess {
-    private static final int DATABASE_VERSION        = 11;
+    private static final int DATABASE_VERSION        = 16;
     private static final String TABLE_NAME           = "Location";
     private static final String DATABASE_NAME        = "locationDatabase";
     private static final String ID_ATTRIBUTE         = "_id";
@@ -49,7 +49,7 @@ public class LocationAccess {
 
         String[] args = {"" + packId};
 
-        Cursor curse = READ_DB.rawQuery( "SELECT " + NAME_ATTRIBUTE + "," + X_ATTRIBUTE + "," + Y_ATTRIBUTE + ", " + DISCOVERED_ATTRIBUTE +
+        Cursor curse = READ_DB.rawQuery( "SELECT " + ID_ATTRIBUTE + ", " + NAME_ATTRIBUTE + "," + X_ATTRIBUTE + "," + Y_ATTRIBUTE + ", " + DISCOVERED_ATTRIBUTE + ", " + PREQ_ATTRIBUTE +
                    " FROM " + TABLE_NAME + " WHERE " + PACKAGE_ATTRIBUTE + " = ?", args );
 
         while( curse.moveToNext() )
@@ -57,7 +57,8 @@ public class LocationAccess {
             Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
                                             curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
                                             curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
-                                            ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ) );
+                                            ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ),
+                                            curse.getInt(curse.getColumnIndex(ID_ATTRIBUTE)) );
 
             // Loads up a list of pre requists to be set after the list has loaded.
             prereq.put( temp, curse.getInt( curse.getColumnIndex( PREQ_ATTRIBUTE )));
@@ -88,15 +89,13 @@ public class LocationAccess {
 
         ContentValues location = new ContentValues();
 
-        // for updating columns.
-        if( local.getId() != 0 )
-        {
-            location.put(ID_ATTRIBUTE, local.getId()); // Not sure if this works
-        }
-
-        if ( local.getPrereq() != null )
+        if ( local.getPrereq() != null && local.getPrereq().getId() != -1 )
         {
             location.put(PREQ_ATTRIBUTE, local.getPrereq().getId());
+        }
+        else
+        {
+            location.put(PREQ_ATTRIBUTE, -1 );
         }
 
         location.put(NAME_ATTRIBUTE, local.getTitle());
@@ -127,7 +126,7 @@ public class LocationAccess {
         private static final String LOCATION_DATABASE_CREATE =
                 "CREATE TABLE " + TABLE_NAME + "(" +
                         ID_ATTRIBUTE +      " REAL " +
-                        PREQ_ATTRIBUTE +    "INTEGER" +
+                        PREQ_ATTRIBUTE +    " INTEGER" +
                         NAME_ATTRIBUTE +    " TEXT " +
                         Y_ATTRIBUTE +       " REAL " +
                         X_ATTRIBUTE +       " REAL " +
@@ -166,6 +165,14 @@ public class LocationAccess {
                     db.execSQL(LOCATION_DATABASE_UPDATE_PREREQ);
                     db.execSQL(LOCATION_DATABASE_ID_AUTOUPDATE);
                     break;
+
+                case 15:
+                    db.execSQL( "DROP TABLE " + TABLE_NAME );
+                    db.execSQL( LOCATION_DATABASE_CREATE );
+
+                case 16:
+                    System.out.println( LOCATION_DATABASE_CREATE );
+
                 default:
                     break;
             }
