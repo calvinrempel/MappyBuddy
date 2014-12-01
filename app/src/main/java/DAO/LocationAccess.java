@@ -54,8 +54,7 @@ public class LocationAccess {
 
         while( curse.moveToNext() )
         {
-            Location temp = new Location (  context,
-                                            curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
+            Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
                                             curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
                                             curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
                                             ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ) );

@@ -17,27 +17,24 @@ public class Location implements Serializable
     private boolean isDiscovered;
     private Location prereq;
     private int id;
-    private Context context;
 
-    public Location( Context context, float _lat, float _lon, String _title, boolean discovered )
+    public Location( float _lat, float _lon, String _title, boolean discovered )
     {
         lat = _lat;
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
-        this.context = context;
 
         prereq = null;
     }
 
-    public Location( Context context, float _lat, float _lon, String _title, boolean discovered, int _id )
+    public Location( float _lat, float _lon, String _title, boolean discovered, int _id )
     {
         lat = _lat;
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
         id = _id;
-        this.context = context;
 
         prereq = null;
     }
@@ -72,7 +69,7 @@ public class Location implements Serializable
         return isDiscovered;
     }
 
-    public void checkIn()
+    public void checkIn( Context context )
     {
 
         if ( prereq == null || prereq.isLocationDiscovered() )

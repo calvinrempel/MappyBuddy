@@ -193,7 +193,7 @@ public class MapViewActivity extends Activity
 
                     for (locations.Location anInRange : inRange)
                     {
-                        anInRange.checkIn();
+                        anInRange.checkIn( this );
                     }
                 }
 
@@ -387,8 +387,7 @@ public class MapViewActivity extends Activity
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
 
-                locations.Location loc = new locations.Location(  MapViewActivity.this,
-                                                                 (float) me.getPosition().latitude,
+                locations.Location loc = new locations.Location( (float) me.getPosition().latitude,
                                                                  (float) me.getPosition().longitude,
                                                                  value,
                                                                  false );
