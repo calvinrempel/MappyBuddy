@@ -17,7 +17,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationAccess {
-    private static final int DATABASE_VERSION        = 3;
+    private static final int DATABASE_VERSION        = 11;
     private static final String TABLE_NAME           = "Location";
     private static final String DATABASE_NAME        = "locationDatabase";
     private static final String ID_ATTRIBUTE         = "_id";
@@ -85,7 +85,7 @@ public class LocationAccess {
      */
     public long insertLocation( Location local, LocationPack pack )
     {
-        SQLiteDatabase db = new LocationDatabase( null ).getWritableDatabase();
+        SQLiteDatabase db = new LocationDatabase( context ).getWritableDatabase();
 
         ContentValues location = new ContentValues();
 
@@ -94,7 +94,12 @@ public class LocationAccess {
         {
             location.put(ID_ATTRIBUTE, local.getId()); // Not sure if this works
         }
-        location.put(PREQ_ATTRIBUTE, local.getPrereq().getId() );
+
+        if ( local.getPrereq() != null )
+        {
+            location.put(PREQ_ATTRIBUTE, local.getPrereq().getId());
+        }
+
         location.put(NAME_ATTRIBUTE, local.getTitle());
         location.put(Y_ATTRIBUTE, local.getLongitude());
         location.put(X_ATTRIBUTE, local.getLongitude());
@@ -114,7 +119,7 @@ public class LocationAccess {
 
         visited.put( DISCOVERED_ATTRIBUTE, loc.isLocationDiscovered() );
 
-        return WRITE_DB.update( TABLE_NAME, visited, ID_ATTRIBUTE + " = ?", update );
+        return WRITE_DB.update(TABLE_NAME, visited, ID_ATTRIBUTE + " = ?", update);
     }
 
 
