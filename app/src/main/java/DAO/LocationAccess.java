@@ -6,7 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 import locations.Location;
 import locations.LocationPack;
@@ -29,31 +31,39 @@ public class LocationAccess {
     private final SQLiteDatabase WRITE_DB = new LocationDatabase(null).getWritableDatabase();
 
 
-    public Location[] getLocations( int packId )
+    public ArrayList<Location> getLocations( int packId )
     {
-        SQLiteDatabase db = new LocationDatabase( null ).getReadableDatabase();
         // stores a list of the locations with their prereq ids.
-        HashMap<Location, Integer> prereq   = new HashMap<Location, Integer>();
+        TreeMap<Location, Integer> prereq   = new TreeMap<Location, Integer>();
         // stores a list of locations with their own Ids.
-        HashMap<Integer, Location> retval   = new HashMap<Integer, Location>();
+        TreeMap<Integer, Location> retval   = new TreeMap<Integer, Location>();
 
 
         String[] args = {"" + packId};
 
-        Cursor curse = db.rawQuery( "SELECT " + NAME_ATTRIBUTE + "," + X_ATTRIBUTE + "," + Y_ATTRIBUTE + ", " + DISCOVERED_ATTRIBUTE +
+        Cursor curse = READ_DB.rawQuery( "SELECT " + NAME_ATTRIBUTE + "," + X_ATTRIBUTE + "," + Y_ATTRIBUTE + ", " + DISCOVERED_ATTRIBUTE +
                    " FROM " + TABLE_NAME + " WHERE " + PACKAGE_ATTRIBUTE + " = ?", args );
 
         while( curse.moveToNext() )
         {
-            Location temp = new Location (  curse.getFloat( curse.getColumnIndex( X_ATTRIBUTE ) ),
-                curse.getFloat( curse.getColumnIndex( Y_ATTRIBUTE ) ),
-                curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
-                ( curse.getInt( curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ) );
+            Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
+                                            curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
+                                            curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
+                                            ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ) );
 
+            // Loads up a list of pre requists to be set after the list has loaded.
+            prereq.put( temp, curse.getInt( curse.getColumnIndex( PREQ_ATTRIBUTE )));
+            retval.put( curse.getInt(curse.getColumnIndex(ID_ATTRIBUTE)), temp );
         }
 
-        return retval.entrySet().toArray(new Location[retval.entrySet().size()]);
+        // Set up the pre-req locations.
+        for( Map.Entry<Location, Integer> entry : prereq.entrySet() )
+        {
+            // Add pre req location to map.
+            entry.getKey().setPrereq( retval.get(entry.getValue()));
+        }
 
+        return new ArrayList<Location> ( retval.values() );
     }
 
 
@@ -80,12 +90,22 @@ public class LocationAccess {
         location.put(Y_ATTRIBUTE, local.getLongitude());
         location.put(X_ATTRIBUTE, local.getLongitude());
         location.put(PACKAGE_ATTRIBUTE, pack.getId() );
-        location.put(DISCOVERED_ATTRIBUTE, local.isLocationDiscovered()? 1 : 0 );
+        location.put(DISCOVERED_ATTRIBUTE, local.isLocationDiscovered() );
 
         // insert returns the last insert id using the MySQLite library.
         // if the item is already in the table, it replaces it. NOTE: conflicts will only appear with
         // a duplicate ID, so make sure the ID is set if you want it to replace.
         return db.insertWithOnConflict(TABLE_NAME, null, location, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    public long updateDiscovered( Location loc )
+    {
+        ContentValues visited = new ContentValues();
+        String[] update = {"" + loc.getId()};
+
+        visited.put( DISCOVERED_ATTRIBUTE, loc.isLocationDiscovered() );
+
+        return WRITE_DB.update( TABLE_NAME, visited, ID_ATTRIBUTE + " = ?", update );
     }
 
 

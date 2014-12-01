@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import DAO.LocationAccess;
+
 /**
  * Created by Calvin_2 on 26/10/2014.
  */
@@ -24,7 +26,7 @@ public class LocationPack implements Serializable
         this.name = name;
         this.isEditable = isEditable;
         this.id = id;
-        locations = new LinkedList<Location>();
+        locations = new LocationAccess().getLocations(id);
     }
 
     public LocationPack( String name, boolean isEditable )
@@ -32,7 +34,14 @@ public class LocationPack implements Serializable
         this.name = name;
         this.isEditable = isEditable;
         locations = new LinkedList<Location>();
+        id = 0;
     }
+
+    public void setId( int _id )
+    {
+        id = _id;
+    }
+
 
     public int getId()
     {

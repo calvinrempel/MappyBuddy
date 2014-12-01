@@ -36,6 +36,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.Iterator;
 import java.util.List;
 
+import DAO.LocationAccess;
+import DAO.LocationPackAccess;
 import DAO.LocationPackLoader;
 import locations.LocationPack;
 
@@ -47,7 +49,7 @@ public class MapViewActivity extends Activity
     {
         DISCOVER,
         CREATE
-    };
+    }
 
     private final int GPS_INTERVAL_TIME_MS = 5000;
     private final int GPS_DISTANCE_DELTA_M = 10;
@@ -175,9 +177,9 @@ public class MapViewActivity extends Activity
 
     public void checkIn( View view )
     {
-        if (me != null)
+        if (me != null )
         {
-            if (mode == MODE.DISCOVER)
+            if (mode == MODE.DISCOVER )
             {
                 Iterator<LocationPack> packItr = packs.iterator();
                 List<locations.Location> inRange;
@@ -234,11 +236,9 @@ public class MapViewActivity extends Activity
 
         activePack = pack;
 
-        Iterator<locations.Location> itr = pack.getLocations().iterator();
-
-        while ( itr.hasNext() )
+        for (locations.Location location : pack.getLocations())
         {
-            addLocation( itr.next() );
+            addLocation(location);
         }
     }
 
@@ -393,7 +393,10 @@ public class MapViewActivity extends Activity
                                                                  false );
                 activePack.addLocation( loc );
                 setActivePack( activePack );
+
+                new LocationAccess().insertLocation(loc, activePack);
             }
+
         });
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -419,8 +422,12 @@ public class MapViewActivity extends Activity
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
 
+
                 LocationPack pack = new LocationPack( value, true );
+
                 packs.add(pack);
+                pack.setId( (int) new LocationPackAccess().insertLocationPack( value, true ) );
+
                 drawer.setContents( packs );
                 setActivePack( pack );
                 drawer.select(pack);
@@ -429,6 +436,8 @@ public class MapViewActivity extends Activity
                 setMode( MODE.CREATE );
                 Button btn = (Button) findViewById( R.id.button );
                 btn.setText("Add Location");
+
+
             }
         });
 

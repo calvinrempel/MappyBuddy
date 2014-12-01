@@ -2,6 +2,8 @@ package locations;
 
 import java.io.Serializable;
 
+import DAO.LocationAccess;
+
 /**
  * Created by Calvin_2 on 26/10/2014.
  */
@@ -20,6 +22,17 @@ public class Location implements Serializable
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
+
+        prereq = null;
+    }
+
+    public Location( float _lat, float _lon, String _title, boolean discovered, int _id )
+    {
+        lat = _lat;
+        lon = _lon;
+        title = _title;
+        isDiscovered = discovered;
+        id = _id;
 
         prereq = null;
     }
@@ -56,8 +69,12 @@ public class Location implements Serializable
 
     public void checkIn()
     {
+
         if ( prereq == null || prereq.isLocationDiscovered() )
+        {
+            new LocationAccess().updateDiscovered( this );
             isDiscovered = true;
+        }
     }
 
     public void setPrereq( Location location )

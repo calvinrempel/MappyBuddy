@@ -14,6 +14,7 @@ public class LocationPackLoader
     {
         // TEST STUFF ONLY AT THE MINUTE!
 
+
         List<locations.LocationPack> list = new LinkedList<locations.LocationPack>();
 
         locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings", false );

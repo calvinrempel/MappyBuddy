@@ -12,7 +12,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationPackAccess {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION      = 11;
     private static final String TABLE_NAME         = "LocationPack";
     private static final String DATABASE_NAME      = "locationDatabase";
     private static final String ID_ATTRIBUTE       = "_id";
@@ -41,19 +41,18 @@ public class LocationPackAccess {
      *
      * NOTE: This method does not add the Locations themselves, that must be done separately.
      *
-     * @param lp A reference to the LocationPack being stored.
+     * @param name A reference to the LocationPack being stored.
      * @return The ID in the DB for the LocationPack
      */
-    public long insertLocationPack( LocationPack lp )
+    public long insertLocationPack( String name, boolean isEditable )
     {
-        LocationAccess locationAccess = new LocationAccess();
         ContentValues values = new ContentValues();
-        long id;
 
-        values.put(NAME_ATTRIBUTE, lp.getName());
-        values.put(EDITABLE_ATTRIBUTE, lp.isEditable()? 1 : 0 );
+        values.put(NAME_ATTRIBUTE, name);
+        values.put(EDITABLE_ATTRIBUTE, isEditable? 1 : 0  );
 
-        return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
+        return 0L;
+        //return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
     }
 
     /**
@@ -62,11 +61,12 @@ public class LocationPackAccess {
     private class LocationPackDatabase extends SQLiteOpenHelper
     {
         private static final String PACKAGE_DATABASE_CREATE =
-                "CREATE TABLE " + TABLE_NAME + "(" +
-                        ID_ATTRIBUTE +      " REAL " +
-                        NAME_ATTRIBUTE +    " TEXT " +
-                        EDITABLE_ATTRIBUTE + " INTEGER " +
-                        ")";
+                "CREATE TABLE " + TABLE_NAME
+                        + "("
+                        + ID_ATTRIBUTE +      " INTEGER PRIMARY KEY "
+                        + NAME_ATTRIBUTE +    " TEXT "
+                        + EDITABLE_ATTRIBUTE + " INTEGER "
+                        + ")";
         private static final String PACKAGE_DATABASE_UPDATE =
                 "ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + EDITABLE_ATTRIBUTE + " INTEGER";
         private static final String PACKAGE_DATABASE_UPDATE2 =
@@ -89,9 +89,9 @@ public class LocationPackAccess {
         {
             switch( newVersion )
             {
-                case 2:
-                    db.execSQL(PACKAGE_DATABASE_UPDATE);
-                    db.execSQL(PACKAGE_DATABASE_UPDATE2);
+                case 13:
+                    db.execSQL("DROP TABLE " + TABLE_NAME );
+                    db.execSQL(PACKAGE_DATABASE_CREATE);
                     break;
             }
         }
