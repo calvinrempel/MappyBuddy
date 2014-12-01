@@ -54,8 +54,8 @@ public class LocationAccess {
 
         while( curse.moveToNext() )
         {
-            Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
-                                            curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
+            Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
+                                            curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
                                             curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
                                             ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ),
                                             curse.getInt(curse.getColumnIndex(ID_ATTRIBUTE)) );
@@ -100,7 +100,7 @@ public class LocationAccess {
 
         location.put(NAME_ATTRIBUTE, local.getTitle());
         location.put(Y_ATTRIBUTE, local.getLongitude());
-        location.put(X_ATTRIBUTE, local.getLongitude());
+        location.put(X_ATTRIBUTE, local.getLatitude());
         location.put(PACKAGE_ATTRIBUTE, pack.getId() );
         location.put(DISCOVERED_ATTRIBUTE, local.isLocationDiscovered() );
 
