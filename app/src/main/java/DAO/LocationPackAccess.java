@@ -18,8 +18,14 @@ public class LocationPackAccess {
     private static final String ID_ATTRIBUTE       = "_id";
     private static final String NAME_ATTRIBUTE     = "name";
     private static final String EDITABLE_ATTRIBUTE = "editable";
-    private final SQLiteDatabase READ_DB  = new LocationPackDatabase(null).getReadableDatabase();
-    private final SQLiteDatabase WRITE_DB = new LocationPackDatabase(null).getWritableDatabase();
+    private SQLiteDatabase READ_DB;
+    private SQLiteDatabase WRITE_DB;
+
+    public LocationPackAccess( Context context )
+    {
+        READ_DB = new LocationPackDatabase( context ).getReadableDatabase();
+        WRITE_DB = new LocationPackDatabase( context ).getWritableDatabase();
+    }
 
     /**
      * This function returns a LocationPack From the Server.
@@ -27,11 +33,13 @@ public class LocationPackAccess {
      * @param name This should be one string with the name, multiple elements will cause undefined behaviour.
      * @return a location pack with the name of the given location pack.
      */
-    public LocationPack getLocationPack( String... name )
+    public LocationPack getLocationPack( Context context, String... name )
     {
+
         Cursor c = READ_DB.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + NAME_ATTRIBUTE + " =  ?", name);
 
-    return new LocationPack( c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
+    return new LocationPack( context,
+                            c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
                            ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
                              c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
     }

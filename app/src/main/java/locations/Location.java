@@ -1,5 +1,7 @@
 package locations;
 
+import android.content.Context;
+
 import java.io.Serializable;
 
 import DAO.LocationAccess;
@@ -15,24 +17,27 @@ public class Location implements Serializable
     private boolean isDiscovered;
     private Location prereq;
     private int id;
+    private Context context;
 
-    public Location( float _lat, float _lon, String _title, boolean discovered )
+    public Location( Context context, float _lat, float _lon, String _title, boolean discovered )
     {
         lat = _lat;
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
+        this.context = context;
 
         prereq = null;
     }
 
-    public Location( float _lat, float _lon, String _title, boolean discovered, int _id )
+    public Location( Context context, float _lat, float _lon, String _title, boolean discovered, int _id )
     {
         lat = _lat;
         lon = _lon;
         title = _title;
         isDiscovered = discovered;
         id = _id;
+        this.context = context;
 
         prereq = null;
     }
@@ -72,7 +77,7 @@ public class Location implements Serializable
 
         if ( prereq == null || prereq.isLocationDiscovered() )
         {
-            new LocationAccess().updateDiscovered( this );
+            new LocationAccess( context ).updateDiscovered( this );
             isDiscovered = true;
         }
     }

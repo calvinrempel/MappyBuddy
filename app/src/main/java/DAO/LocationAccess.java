@@ -27,9 +27,17 @@ public class LocationAccess {
     private static final String Y_ATTRIBUTE          = "y";
     private static final String PACKAGE_ATTRIBUTE    = "packageId";
     private static final String DISCOVERED_ATTRIBUTE = "discovered";
-    private final SQLiteDatabase READ_DB  = new LocationDatabase(null).getReadableDatabase();
-    private final SQLiteDatabase WRITE_DB = new LocationDatabase(null).getWritableDatabase();
+    private SQLiteDatabase READ_DB;
+    private SQLiteDatabase WRITE_DB;
+    private Context context;
 
+
+    public LocationAccess( Context context )
+    {
+        READ_DB  = new LocationDatabase( context ).getReadableDatabase();
+        WRITE_DB = new LocationDatabase( context ).getWritableDatabase();
+        this.context = context;
+    }
 
     public ArrayList<Location> getLocations( int packId )
     {
@@ -46,7 +54,8 @@ public class LocationAccess {
 
         while( curse.moveToNext() )
         {
-            Location temp = new Location (  curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
+            Location temp = new Location (  context,
+                                            curse.getFloat(  curse.getColumnIndex( X_ATTRIBUTE ) ),
                                             curse.getFloat(  curse.getColumnIndex( Y_ATTRIBUTE ) ),
                                             curse.getString( curse.getColumnIndex( NAME_ATTRIBUTE ) ),
                                             ( curse.getInt(  curse.getColumnIndex( DISCOVERED_ATTRIBUTE ) ) != 0 ) );

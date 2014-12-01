@@ -216,7 +216,7 @@ public class MapViewActivity extends Activity
 
     public void loadLocationPackList()
     {
-        packs = ( new LocationPackLoader() ).getLocationPacks();
+        packs = ( new LocationPackLoader() ).getLocationPacks( this );
         drawer.setContents( packs );
         setActivePack( packs.get( 0 ) );
     }
@@ -387,14 +387,15 @@ public class MapViewActivity extends Activity
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
 
-                locations.Location loc = new locations.Location( (float) me.getPosition().latitude,
+                locations.Location loc = new locations.Location(  MapViewActivity.this,
+                                                                 (float) me.getPosition().latitude,
                                                                  (float) me.getPosition().longitude,
                                                                  value,
                                                                  false );
                 activePack.addLocation( loc );
                 setActivePack( activePack );
 
-                new LocationAccess().insertLocation(loc, activePack);
+                new LocationAccess( MapViewActivity.this ).insertLocation(loc, activePack);
             }
 
         });
@@ -426,10 +427,10 @@ public class MapViewActivity extends Activity
                 LocationPack pack = new LocationPack( value, true );
 
                 packs.add(pack);
-                pack.setId( (int) new LocationPackAccess().insertLocationPack( value, true ) );
+                pack.setId((int) new LocationPackAccess( MapViewActivity.this ).insertLocationPack(value, true));
 
-                drawer.setContents( packs );
-                setActivePack( pack );
+                drawer.setContents(packs);
+                setActivePack(pack);
                 drawer.select(pack);
 
                 // Save Pack

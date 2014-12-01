@@ -1,6 +1,8 @@
 package locations;
 
 
+import android.content.Context;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
@@ -21,12 +23,12 @@ public class LocationPack implements Serializable
     private String name;
     private int id;
 
-    public LocationPack( String name, boolean isEditable, int id )
+    public LocationPack( Context context, String name, boolean isEditable, int id )
     {
         this.name = name;
         this.isEditable = isEditable;
         this.id = id;
-        locations = new LocationAccess().getLocations(id);
+        locations = new LocationAccess( context ).getLocations(id);
     }
 
     public LocationPack( String name, boolean isEditable )
