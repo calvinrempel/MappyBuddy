@@ -36,7 +36,7 @@ public class LocationPack implements Serializable
         this.name = name;
         this.isEditable = isEditable;
         locations = new LinkedList<Location>();
-        id = 0;
+        //id = 0;
     }
 
     public void setId( int _id )

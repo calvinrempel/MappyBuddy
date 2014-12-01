@@ -17,7 +17,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationAccess {
-    private static final int DATABASE_VERSION        = 16;
+    private static final int DATABASE_VERSION        = 17;
     private static final String TABLE_NAME           = "Location";
     private static final String DATABASE_NAME        = "locationDatabase";
     private static final String ID_ATTRIBUTE         = "_id";
@@ -99,8 +99,8 @@ public class LocationAccess {
         }
 
         location.put(NAME_ATTRIBUTE, local.getTitle());
-        location.put(Y_ATTRIBUTE, local.getLongitude());
-        location.put(X_ATTRIBUTE, local.getLatitude());
+        location.put(X_ATTRIBUTE, local.getLongitude());
+        location.put(Y_ATTRIBUTE, local.getLatitude());
         location.put(PACKAGE_ATTRIBUTE, pack.getId() );
         location.put(DISCOVERED_ATTRIBUTE, local.isLocationDiscovered() );
 

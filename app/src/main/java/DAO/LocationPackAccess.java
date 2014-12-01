@@ -15,7 +15,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationPackAccess {
-    private static final int DATABASE_VERSION      = 16;
+    private static final int DATABASE_VERSION      = 17;
     private static final String TABLE_NAME         = "LocationPack";
     private static final String DATABASE_NAME      = "locationDatabase";
     private static final String ID_ATTRIBUTE       = "_id";
@@ -43,7 +43,7 @@ public class LocationPackAccess {
 
     return new LocationPack( context,
                             c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
-                           ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
+                           ( c.getInt( c.getColumnIndex( EDITABLE_ATTRIBUTE ) ) != 0  ),
                              c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
     }
 
@@ -60,9 +60,11 @@ public class LocationPackAccess {
         c.moveToFirst();
         while ( c.moveToNext() )
         {
+            int id = c.getInt( c.getColumnIndex(ID_ATTRIBUTE));
+
             packs.add( new LocationPack( context,
                     c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
-                    ( c.getInt( c.getColumnIndex( ID_ATTRIBUTE ) ) == 0  ),
+                    ( c.getInt( c.getColumnIndex( EDITABLE_ATTRIBUTE ) ) != 0  ),
                     c.getInt( c.getColumnIndex(ID_ATTRIBUTE))) );
         }
 
@@ -95,8 +97,8 @@ public class LocationPackAccess {
         private static final String PACKAGE_DATABASE_CREATE =
                 "CREATE TABLE " + TABLE_NAME
                         + "("
-                        + ID_ATTRIBUTE +      " INTEGER PRIMARY KEY "
-                        + NAME_ATTRIBUTE +    " TEXT "
+                        + ID_ATTRIBUTE +      " INTEGER auto_increment PRIMARY KEY, "
+                        + NAME_ATTRIBUTE +    " TEXT, "
                         + EDITABLE_ATTRIBUTE + " INTEGER "
                         + ")";
         private static final String PACKAGE_DATABASE_UPDATE =
@@ -121,7 +123,7 @@ public class LocationPackAccess {
         {
             switch( newVersion )
             {
-                case 13:
+                case 17:
                     db.execSQL("DROP TABLE " + TABLE_NAME );
                     db.execSQL(PACKAGE_DATABASE_CREATE);
                     break;
