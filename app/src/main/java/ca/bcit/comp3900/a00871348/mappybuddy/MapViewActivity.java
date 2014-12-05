@@ -88,10 +88,16 @@ public class MapViewActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_view);
+
+        // Create Database right away
+        LocationAccess.getInstance( getBaseContext() );
+        LocationPackAccess.getInstance( getBaseContext() );
+
         if ( map == null )
         {
             try
             {
+                //loadLocationPackList();
                 locationMarkers = new HashMap<String, locations.Location>();
                 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
                 map.setOnMarkerClickListener( new MarkerListener() );
@@ -107,7 +113,7 @@ public class MapViewActivity extends Activity
         }
 
         // Initialize everything if they haven't already been initialized.
-        if (locManager == null)
+        if ( locManager == null)
         {
             locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             locListener = new GPSListener();
@@ -230,6 +236,7 @@ public class MapViewActivity extends Activity
     public void setActivePack( LocationPack pack )
     {
         map.clear();
+        locationMarkers.clear();
 
         if ( me != null )
         {
@@ -237,6 +244,15 @@ public class MapViewActivity extends Activity
             if ( loc != null )
             {
                 UpdateCurrentLocation( loc.getLatitude(), loc.getLongitude() );
+            }
+
+            if ( mode == MODE.DISCOVER )
+            {
+                me.setVisible( true );
+            }
+            else
+            {
+                me.setVisible( false );
             }
         }
 
@@ -345,7 +361,7 @@ public class MapViewActivity extends Activity
 
 
         Marker mrk = map.addMarker(marker);
-        locationMarkers.put( mrk.getId(), location );
+        locationMarkers.put( mrk.getId().toString(), location );
     }
 
     protected void UpdateCurrentLocation( double lat, double lon )
@@ -379,10 +395,20 @@ public class MapViewActivity extends Activity
      */
     private void updateLocation()
     {
-        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                GPS_INTERVAL_TIME_MS,
-                GPS_DISTANCE_DELTA_M,
-                locListener);
+        if ( locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) )
+        {
+            locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                    GPS_INTERVAL_TIME_MS,
+                    GPS_DISTANCE_DELTA_M,
+                    locListener);
+        }
+        else if ( locManager.isProviderEnabled(LocationManager.GPS_PROVIDER ) )
+        {
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    GPS_INTERVAL_TIME_MS,
+                    GPS_DISTANCE_DELTA_M,
+                    locListener);
+        }
     }
 
     private void createLocation()
@@ -409,7 +435,7 @@ public class MapViewActivity extends Activity
                 activePack.addLocation( loc );
                 setActivePack( activePack );
 
-                new LocationAccess( MapViewActivity.this ).insertLocation(loc, activePack);
+                LocationAccess.getInstance( MapViewActivity.this ).insertLocation(loc, activePack);
             }
 
         });
@@ -441,7 +467,7 @@ public class MapViewActivity extends Activity
                 LocationPack pack = new LocationPack( value, true );
 
                 packs.add(pack);
-                pack.setId((int) new LocationPackAccess( MapViewActivity.this ).insertLocationPack(value, true));
+                LocationPackAccess.getInstance( MapViewActivity.this ).insertLocationPack(pack, true);
 
                 drawer.setContents(packs);
                 setActivePack(pack);
@@ -451,8 +477,6 @@ public class MapViewActivity extends Activity
                 setMode( MODE.CREATE );
                 Button btn = (Button) findViewById( R.id.button );
                 btn.setText("Add Location");
-
-
             }
         });
 
@@ -582,7 +606,13 @@ public class MapViewActivity extends Activity
                 return false;
             }
 
-            final locations.Location loc = locationMarkers.get( marker.getId() );
+            final String mrkId = marker.getId().toString();
+            final locations.Location loc = locationMarkers.get( mrkId );
+
+            if ( loc == null )
+            {
+                return false;
+            }
 
             AlertDialog.Builder b = new AlertDialog.Builder( MapViewActivity.this);
             b.setTitle("Set Prereq");
@@ -611,7 +641,8 @@ public class MapViewActivity extends Activity
                         return;
                     }
 
-                    loc.setPrereq( locations[ which ] );
+                    loc.setPrereq( locations[ which - 1 ] );
+                    LocationAccess.getInstance( getBaseContext() ).updatePrereq( loc );
 
                     setActivePack( activePack );
                 }

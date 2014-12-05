@@ -16,14 +16,16 @@ public class LocationPackLoader
     public List<locations.LocationPack> getLocationPacks( Context context )
     {
         List<LocationPack> list = new LinkedList<LocationPack>();
-        LocationPackAccess packAccess = new LocationPackAccess( context );
-        /*list = packAccess.getAllLocationPacks( context );
+        LocationPackAccess packAccess = LocationPackAccess.getInstance( context );
+        LocationAccess locationAccess = LocationAccess.getInstance( context );
+        list = packAccess.getAllLocationPacks( context );
 
         if ( list.size() == 0 )
-        {*/
-            //list = createDefault( context, packAccess, new LocationAccess( context ) );
-        /*}*/
+        {
+            list = createDefault( context, packAccess, locationAccess );
+        }
 
+        /*
         Location loc1, loc2;
 
         locations.LocationPack pack = new locations.LocationPack( "Vanvouver Park Tour", false );
@@ -48,13 +50,14 @@ public class LocationPackLoader
         loc1.setPrereq( loc2 );
 
         list.add( pack );
-
+*/
         return list;
     }
 
-    public void createDefault( Context context, LocationPackAccess packAccess, LocationAccess locationAccess )
+    public List<LocationPack> createDefault( Context context, LocationPackAccess packAccess, LocationAccess locationAccess )
     {
-        /*
+        List<LocationPack> defaults = new LinkedList<LocationPack>();
+
         locations.LocationPack pack = new locations.LocationPack( "Canadian Legislative Buildings", false );
         pack.addLocation( new Location(  48.419f, -123.37f, "British Columbia", false ) );
         pack.addLocation( new Location(  53.533f, -113.506f, "Alberta", false ) );
@@ -70,16 +73,17 @@ public class LocationPackLoader
         pack.addLocation( new Location(  60.717f, -135.049f, "Yukon", false ) );
         pack.addLocation( new Location(  63.750f, -68.523f, "Nunavut", false ) );
 
-        packAccess.insertLocationPack( pack.getName(), pack.isEditable() );
+        packAccess.insertLocationPack( pack, pack.isEditable() );
         for ( Location loc : pack.getLocations() )
         {
             locationAccess.insertLocation( loc, pack );
         }
-        */
+
+        defaults.add( pack );
 
         Location loc1, loc2;
 
-        locations.LocationPack pack = new locations.LocationPack( "Burnaby Things", false );
+        pack = new locations.LocationPack( "Burnaby Things", false );
         pack.addLocation( loc1 = new Location(  49.249f, -123.001f, "BCIT SE12", false ) );
         pack.addLocation( loc2 = new Location(  49.239f, -122.966f, "Burnaby Village Museum", true ) );
 
@@ -91,11 +95,14 @@ public class LocationPackLoader
         pack.addLocation( loc1 = new Location(  49.246f, -123.0017f, "Not My House", false ) );
         loc1.setPrereq( loc2 );
 
-        /*
-        packAccess.insertLocationPack( pack.getName(), pack.isEditable() );
+        packAccess.insertLocationPack( pack, pack.isEditable() );
         for ( Location loc : pack.getLocations() )
         {
             locationAccess.insertLocation( loc, pack );
-        }*/
+        }
+
+        defaults.add( pack );
+
+        return defaults;
     }
 }

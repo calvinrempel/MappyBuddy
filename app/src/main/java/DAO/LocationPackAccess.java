@@ -17,14 +17,25 @@ import locations.LocationPack;
 public class LocationPackAccess {
     private static final int DATABASE_VERSION      = 19;
     private static final String TABLE_NAME         = "LocationPack";
-    private static final String DATABASE_NAME      = "locationDatabase";
+    private static final String DATABASE_NAME      = "locationPackDatabase";
     private static final String ID_ATTRIBUTE       = "_id";
     private static final String NAME_ATTRIBUTE     = "name";
     private static final String EDITABLE_ATTRIBUTE = "editable";
     private SQLiteDatabase READ_DB;
     private SQLiteDatabase WRITE_DB;
+    private static LocationPackAccess instance;
 
-    public LocationPackAccess( Context context )
+    public static LocationPackAccess getInstance( Context context )
+    {
+        if ( instance == null )
+        {
+            instance = new LocationPackAccess( context );
+        }
+
+        return instance;
+    }
+
+    private LocationPackAccess( Context context )
     {
         READ_DB = new LocationPackDatabase( context ).getReadableDatabase();
         WRITE_DB = new LocationPackDatabase( context ).getWritableDatabase();
@@ -41,7 +52,7 @@ public class LocationPackAccess {
 
         Cursor c = READ_DB.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + NAME_ATTRIBUTE + " =  ?", name);
 
-    return new LocationPack( context,
+        return new LocationPack( context,
                             c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
                            ( c.getInt( c.getColumnIndex( EDITABLE_ATTRIBUTE ) ) != 0  ),
                              c.getInt( c.getColumnIndex(ID_ATTRIBUTE)));
@@ -57,7 +68,6 @@ public class LocationPackAccess {
             return packs;
         }
 
-        c.moveToFirst();
         while ( c.moveToNext() )
         {
             int index = c.getColumnIndex( ID_ATTRIBUTE );
@@ -87,18 +97,19 @@ public class LocationPackAccess {
      *
      * NOTE: This method does not add the Locations themselves, that must be done separately.
      *
-     * @param name A reference to the LocationPack being stored.
+     * @param pack The LocationPack to store.
      * @return The ID in the DB for the LocationPack
      */
-    public long insertLocationPack( String name, boolean isEditable )
+    public long insertLocationPack( LocationPack pack, boolean isEditable )
     {
         ContentValues values = new ContentValues();
 
-        values.put(NAME_ATTRIBUTE, name);
+        values.put(NAME_ATTRIBUTE, pack.getName());
         values.put(EDITABLE_ATTRIBUTE, isEditable? 1 : 0  );
 
 
         long id = WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
+        pack.setId( (int) id );
 
         return id;
     }
@@ -111,7 +122,7 @@ public class LocationPackAccess {
         private static final String PACKAGE_DATABASE_CREATE =
                 "CREATE TABLE " + TABLE_NAME
                         + "("
-                        + ID_ATTRIBUTE +      " INTEGER auto_increment PRIMARY KEY, "
+                        + ID_ATTRIBUTE +      " INTEGER PRIMARY KEY, "
                         + NAME_ATTRIBUTE +    " TEXT, "
                         + EDITABLE_ATTRIBUTE + " INTEGER "
                         + ")";
@@ -135,8 +146,8 @@ public class LocationPackAccess {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
-                db.execSQL("DROP TABLE " + TABLE_NAME );
-                db.execSQL(PACKAGE_DATABASE_CREATE);
+            db.execSQL("DROP TABLE " + TABLE_NAME );
+            db.execSQL(PACKAGE_DATABASE_CREATE);
         }
     }
 }

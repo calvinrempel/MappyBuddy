@@ -78,7 +78,7 @@ public class PackDetailsActivity extends Activity {
         builder.setMessage("Are you sure?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                LocationPackAccess packAccess = new LocationPackAccess( PackDetailsActivity.this );
+                LocationPackAccess packAccess = LocationPackAccess.getInstance( PackDetailsActivity.this );
                 packAccess.delete( pack );
             }
         })

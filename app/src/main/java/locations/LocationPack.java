@@ -28,7 +28,7 @@ public class LocationPack implements Serializable
         this.name = name;
         this.isEditable = isEditable;
         this.id = id;
-        locations = new LocationAccess( context ).getLocations(id);
+        locations = LocationAccess.getInstance( context ).getLocations(id);
     }
 
     public LocationPack( String name, boolean isEditable )

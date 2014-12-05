@@ -31,8 +31,19 @@ public class LocationAccess {
     private SQLiteDatabase WRITE_DB;
     private Context context;
 
+    private static LocationAccess instance;
 
-    public LocationAccess( Context context )
+    public static LocationAccess getInstance( Context context )
+    {
+        if ( instance == null )
+        {
+            instance = new LocationAccess( context );
+        }
+
+        return instance;
+    }
+
+    private LocationAccess( Context context )
     {
         READ_DB  = new LocationDatabase( context ).getReadableDatabase();
         WRITE_DB = new LocationDatabase( context ).getWritableDatabase();
@@ -107,7 +118,10 @@ public class LocationAccess {
         // insert returns the last insert id using the MySQLite library.
         // if the item is already in the table, it replaces it. NOTE: conflicts will only appear with
         // a duplicate ID, so make sure the ID is set if you want it to replace.
-        return db.insertWithOnConflict(TABLE_NAME, null, location, SQLiteDatabase.CONFLICT_REPLACE);
+        long id = db.insertWithOnConflict(TABLE_NAME, null, location, SQLiteDatabase.CONFLICT_REPLACE);
+        local.setId( id );
+
+        return id;
     }
 
     public long updateDiscovered( Location loc )
@@ -120,19 +134,29 @@ public class LocationAccess {
         return WRITE_DB.update(TABLE_NAME, visited, ID_ATTRIBUTE + " = ?", update);
     }
 
+    public long updatePrereq( Location cur )
+    {
+        ContentValues visited = new ContentValues();
+        String[] update = {"" + cur.getId()};
+        int prereq = ( cur.getPrereq() == null ) ? -1 : cur.getPrereq().getId();
+
+        visited.put( PREQ_ATTRIBUTE, prereq );
+
+        long id = WRITE_DB.update(TABLE_NAME, visited, PREQ_ATTRIBUTE + " = ?", update);
+        return id;
+    }
 
     class LocationDatabase extends SQLiteOpenHelper
     {
         private static final String LOCATION_DATABASE_CREATE =
                 "CREATE TABLE " + TABLE_NAME + "(" +
-                        ID_ATTRIBUTE +      " REAL " +
-                        PREQ_ATTRIBUTE +    " INTEGER" +
-                        NAME_ATTRIBUTE +    " TEXT " +
-                        Y_ATTRIBUTE +       " REAL " +
-                        X_ATTRIBUTE +       " REAL " +
-                        PACKAGE_ATTRIBUTE + " INTEGER " +
+                        ID_ATTRIBUTE +      " INTEGER PRIMARY KEY, " +
+                        PREQ_ATTRIBUTE +    " INTEGER, " +
+                        NAME_ATTRIBUTE +    " TEXT, " +
+                        Y_ATTRIBUTE +       " REAL, " +
+                        X_ATTRIBUTE +       " REAL, " +
+                        PACKAGE_ATTRIBUTE + " INTEGER, " +
                         DISCOVERED_ATTRIBUTE + " INTEGER " +
-
                 ")";
 
         private static final String LOCATION_DATABASE_UPDATE =

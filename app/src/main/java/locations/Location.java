@@ -90,17 +90,21 @@ public class Location implements Serializable, Comparable<Location>
 
     public void checkIn( Context context )
     {
-
         if ( prereq == null || prereq.isLocationDiscovered() )
         {
-            new LocationAccess( context ).updateDiscovered( this );
             isDiscovered = true;
+            LocationAccess.getInstance( context ).updateDiscovered( this );
         }
     }
 
     public void setPrereq( Location location )
     {
         prereq = location;
+    }
+
+    public void setId( long id )
+    {
+        this.id = (int) id;
     }
 
     /**
