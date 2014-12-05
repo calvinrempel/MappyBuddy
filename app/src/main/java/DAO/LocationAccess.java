@@ -17,7 +17,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationAccess {
-    private static final int DATABASE_VERSION        = 17;
+    private static final int DATABASE_VERSION        = 19;
     private static final String TABLE_NAME           = "Location";
     private static final String DATABASE_NAME        = "locationDatabase";
     private static final String ID_ATTRIBUTE         = "_id";
@@ -157,26 +157,8 @@ public class LocationAccess {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
-            switch( newVersion )
-            {
-                case 2:
-                    db.execSQL(LOCATION_DATABASE_UPDATE);
-                case 3:
-                    db.execSQL(LOCATION_DATABASE_UPDATE_PREREQ);
-                    db.execSQL(LOCATION_DATABASE_ID_AUTOUPDATE);
-                    break;
-
-                case 15:
-                    db.execSQL( "DROP TABLE " + TABLE_NAME );
-                    db.execSQL( LOCATION_DATABASE_CREATE );
-
-                case 16:
-                    System.out.println( LOCATION_DATABASE_CREATE );
-
-                default:
-                    break;
-            }
-
+            db.execSQL( "DROP TABLE " + TABLE_NAME );
+            db.execSQL( LOCATION_DATABASE_CREATE );
         }
     }
 }

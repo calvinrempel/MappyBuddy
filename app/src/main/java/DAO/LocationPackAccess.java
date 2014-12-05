@@ -15,7 +15,7 @@ import locations.LocationPack;
  * Created by Marc on 2014-10-20.
  */
 public class LocationPackAccess {
-    private static final int DATABASE_VERSION      = 17;
+    private static final int DATABASE_VERSION      = 19;
     private static final String TABLE_NAME         = "LocationPack";
     private static final String DATABASE_NAME      = "locationDatabase";
     private static final String ID_ATTRIBUTE       = "_id";
@@ -60,7 +60,11 @@ public class LocationPackAccess {
         c.moveToFirst();
         while ( c.moveToNext() )
         {
-            int id = c.getInt( c.getColumnIndex(ID_ATTRIBUTE));
+            int index = c.getColumnIndex( ID_ATTRIBUTE );
+            int id = c.getInt( index );
+
+            int numCols = c.getColumnCount();
+            String names[] = c.getColumnNames();
 
             packs.add( new LocationPack( context,
                     c.getString(c.getColumnIndex(NAME_ATTRIBUTE)),
@@ -69,6 +73,13 @@ public class LocationPackAccess {
         }
 
         return packs;
+    }
+
+    public void delete( LocationPack pack )
+    {
+        int id = pack.getId();
+
+        WRITE_DB.execSQL( "DELETE FROM " + TABLE_NAME + " WHERE " + ID_ATTRIBUTE + " = " + pack.getId() );
     }
 
     /**
@@ -86,7 +97,10 @@ public class LocationPackAccess {
         values.put(NAME_ATTRIBUTE, name);
         values.put(EDITABLE_ATTRIBUTE, isEditable? 1 : 0  );
 
-        return WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
+
+        long id = WRITE_DB.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE );
+
+        return id;
     }
 
     /**
@@ -121,13 +135,8 @@ public class LocationPackAccess {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
-            switch( newVersion )
-            {
-                case 17:
-                    db.execSQL("DROP TABLE " + TABLE_NAME );
-                    db.execSQL(PACKAGE_DATABASE_CREATE);
-                    break;
-            }
+                db.execSQL("DROP TABLE " + TABLE_NAME );
+                db.execSQL(PACKAGE_DATABASE_CREATE);
         }
     }
 }

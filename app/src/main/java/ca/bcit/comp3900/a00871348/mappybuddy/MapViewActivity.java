@@ -33,8 +33,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import DAO.LocationAccess;
 import DAO.LocationPackAccess;
@@ -56,6 +58,7 @@ public class MapViewActivity extends Activity
     private final float CHECK_IN_RADIUS = 500;
     private final int ZOOM_FACTOR = 15;
 
+    static int idgen = 100;
     private static final int LINE_COLOR_DISCOVERED = Color.GREEN;
     private static final int LINE_COLOR_UNDISCOVERED = Color.RED;
 
@@ -69,6 +72,7 @@ public class MapViewActivity extends Activity
     private boolean firstTimeFound;
     private MODE mode;
     private Menu optionsMenu;
+    private Map<String, locations.Location> locationMarkers;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -88,7 +92,9 @@ public class MapViewActivity extends Activity
         {
             try
             {
+                locationMarkers = new HashMap<String, locations.Location>();
                 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+                map.setOnMarkerClickListener( new MarkerListener() );
                 me = null;
                 firstTimeFound = false;
                 drawer = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -289,7 +295,12 @@ public class MapViewActivity extends Activity
             centerLon = ( ( cur.longitude - pre.longitude ) / 2.0 ) + pre.longitude;
             center = new LatLng( centerLat, centerLon );
 
-            float rotation = (float) Math.atan( Math.abs( cur.longitude - pre.longitude )  / Math.abs( cur.latitude - pre.latitude ) );
+            double angle1 = Math.toDegrees(Math.atan2(cur.longitude - pre.longitude, cur.latitude - pre.latitude));
+
+            if ( angle1 < 0 )
+            {
+                angle1 += 360;
+            }
 
             PolylineOptions polyline = new PolylineOptions();
             polyline.add( cur );
@@ -306,7 +317,7 @@ public class MapViewActivity extends Activity
 
             MarkerOptions arrowMarker = new MarkerOptions();
             arrowMarker.position( center );
-            arrowMarker.rotation( rotation );
+            arrowMarker.rotation( (float) angle1 );
             BitmapDescriptor arrow = BitmapDescriptorFactory.fromResource( R.drawable.arrow );
             arrowMarker.icon( arrow );
 
@@ -332,7 +343,9 @@ public class MapViewActivity extends Activity
 
         marker.icon( bitmap );
 
-        map.addMarker(marker);
+
+        Marker mrk = map.addMarker(marker);
+        locationMarkers.put( mrk.getId(), location );
     }
 
     protected void UpdateCurrentLocation( double lat, double lon )
@@ -374,6 +387,7 @@ public class MapViewActivity extends Activity
 
     private void createLocation()
     {
+
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert.setTitle("Location Name");
@@ -390,7 +404,8 @@ public class MapViewActivity extends Activity
                 locations.Location loc = new locations.Location( (float) me.getPosition().latitude,
                                                                  (float) me.getPosition().longitude,
                                                                  value,
-                                                                 false );
+                                                                 false,
+                                                                 idgen++ );
                 activePack.addLocation( loc );
                 setActivePack( activePack );
 
@@ -556,4 +571,55 @@ public class MapViewActivity extends Activity
         public void onProviderDisabled(String s) {}
     }
 
+
+    public class MarkerListener implements GoogleMap.OnMarkerClickListener
+    {
+        @Override
+        public boolean onMarkerClick(final Marker marker)
+        {
+            if ( mode == MODE.DISCOVER )
+            {
+                return false;
+            }
+
+            final locations.Location loc = locationMarkers.get( marker.getId() );
+
+            AlertDialog.Builder b = new AlertDialog.Builder( MapViewActivity.this);
+            b.setTitle("Set Prereq");
+
+            final locations.Location[] locations = new locations.Location[ activePack.getLocations().size() - 1 ];
+            final String[] locationNames = new String[ locations.length + 1 ];
+            locationNames[0] = "None";
+            int i = 0;
+
+            for ( locations.Location temp : activePack.getLocations() )
+            {
+                if ( temp.getId() != loc.getId() ) {
+                    locationNames[i + 1] = temp.getTitle();
+                    locations[i] = temp;
+                    i++;
+                }
+            }
+
+            b.setItems( locationNames, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    if ( which == 0 )
+                    {
+                        return;
+                    }
+
+                    loc.setPrereq( locations[ which ] );
+
+                    setActivePack( activePack );
+                }
+
+            });
+
+            b.show();
+            return true;
+        }
+    }
 }

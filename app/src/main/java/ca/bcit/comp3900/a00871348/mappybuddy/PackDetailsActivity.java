@@ -1,6 +1,8 @@
 package ca.bcit.comp3900.a00871348.mappybuddy;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 
 import java.io.Serializable;
 
+import DAO.LocationPackAccess;
 import locations.LocationPack;
 
 
@@ -67,6 +70,25 @@ public class PackDetailsActivity extends Activity {
         );
 
         list.setOnItemClickListener( new ListListener() );
+    }
+
+    public void deletePack( View view )
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                LocationPackAccess packAccess = new LocationPackAccess( PackDetailsActivity.this );
+                packAccess.delete( pack );
+            }
+        })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).show();
+
     }
 
     private class ListListener implements AdapterView.OnItemClickListener
